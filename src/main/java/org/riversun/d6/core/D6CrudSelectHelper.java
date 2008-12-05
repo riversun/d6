@@ -57,10 +57,15 @@ public class D6CrudSelectHelper extends D6CrudHelperBase {
         final DBTable dbTable = mModelClazz.getAnnotation(DBTable.class);
         final String dbTableName = dbTable.tableName();
         final List<DBColumn> primaryKeyList = getPrimaryKeyColumnList();
-        final DBColumn primaryKey = primaryKeyList.get(0);
-        final String primaryKeyColumnName = primaryKey.columnName();
+        final String preparedSql;
+        if (primaryKeyList.size() > 0) {
+            final DBColumn primaryKey = primaryKeyList.get(0);
+            final String primaryKeyColumnName = primaryKey.columnName();
 
-        final String preparedSql = "SELECT COUNT(" + primaryKeyColumnName + ") FROM " + dbTableName;
+            preparedSql = "SELECT COUNT(" + primaryKeyColumnName + ") FROM " + dbTableName;
+        } else {
+            preparedSql = "SELECT COUNT(" + "*" + ") FROM " + dbTableName;
+        }
 
         return preparedSql;
     }

@@ -104,18 +104,22 @@ public class D6CrudUpdateHelper extends D6CrudHelperBase {
 
         final StringGrabber sgWhere = new StringGrabber();
 
-        sgWhere.append("WHERE ");
-
         List<Field> primaryKeyFieldList = getPrimaryKeyFieldList();
-        for (Field field : primaryKeyFieldList) {
-            DBColumn dbColumn = field.getAnnotation(DBColumn.class);
 
-            sgWhere.append(dbColumn.columnName());
-            sgWhere.append(" = ? AND ");
+        if (primaryKeyFieldList.size() > 0) {
 
+            sgWhere.append("WHERE ");
+
+            for (Field field : primaryKeyFieldList) {
+                DBColumn dbColumn = field.getAnnotation(DBColumn.class);
+
+                sgWhere.append(dbColumn.columnName());
+                sgWhere.append(" = ? AND ");
+
+            }
+
+            sgWhere.removeTail(5);
         }
-
-        sgWhere.removeTail(5);
 
         return sgWhere.toString();
     }
