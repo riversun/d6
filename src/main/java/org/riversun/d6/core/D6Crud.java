@@ -793,7 +793,7 @@ public class D6Crud {
 
         } catch (Exception e) {
             loge("#execSelectTableWithJoin General ", e);
-            throw new RuntimeException(e);
+
         } finally {
             try {
                 if (rs != null) {
