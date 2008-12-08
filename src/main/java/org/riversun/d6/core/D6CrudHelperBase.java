@@ -129,7 +129,13 @@ public abstract class D6CrudHelperBase {
                 } else {
                     preparedStatement.setNull(parameterIndex, java.sql.Types.INTEGER);
                 }
+            } else if (fieldType == long.class || fieldType == Long.class) {
 
+                if (fieldValue != null) {
+                    preparedStatement.setLong(parameterIndex, (long) (Long) fieldValue);
+                } else {
+                    preparedStatement.setNull(parameterIndex, java.sql.Types.INTEGER);
+                }
             } else {
                 final String msg = "Unknown data type. type=" + fieldType + " value=" + fieldValue;
                 loge(msg);
