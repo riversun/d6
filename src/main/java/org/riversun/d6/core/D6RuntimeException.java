@@ -40,4 +40,19 @@ public class D6RuntimeException extends RuntimeException {
         super(message);
     }
 
+    public D6RuntimeException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+        // TODO Auto-generated constructor stub
+    }
+
+    public D6RuntimeException(String message, Throwable cause) {
+        super(message, cause);
+        // TODO Auto-generated constructor stub
+    }
+
+    public D6RuntimeException(Throwable cause) {
+        super(cause);
+        // TODO Auto-generated constructor stub
+    }
+
 }
