@@ -129,13 +129,13 @@ class ModelWrapper<T> {
 
             }
             return modelClassObj;
+
         } catch (IllegalAccessException e) {
-            // handling this exception for modelClazz.newInstance();
-            e.printStackTrace();
+            throw new D6RuntimeException(e);
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            throw new D6RuntimeException("Cannot instanciate model object from '" + modelClazz.getName() + "' If you declare '" + modelClazz.getName() + "' as inner class, please make it static.");
         }
-        return null;
+
     }
 
     /**
