@@ -50,7 +50,7 @@ public @interface DBColumn {
      * 
      * @return
      */
-    public String columnType();
+    public String columnType() default "";
 
     /**
      * Flag of this DB column allows null
