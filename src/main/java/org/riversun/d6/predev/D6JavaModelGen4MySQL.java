@@ -48,6 +48,8 @@ public class D6JavaModelGen4MySQL {
     private static final String JAVA_TYPE_LONG = "Long";
     private static final String JAVA_TYPE_BOOLEAN = "boolean";
 
+    private static final String JAVA_COMPLEX_TYPE_GEOMETRY = "org.riversun.d6.model.Geometry";
+
     private static final String JAVA_TYPE_TIMESTAMP = "java.sql.Timestamp";
     private static final String JAVA_TYPE_DATE1 = "java.sql.Date";
     private static final String JAVA_TYPE_TIME = "java.sql.Time";
@@ -295,6 +297,9 @@ public class D6JavaModelGen4MySQL {
         typeMap.put("int", JAVA_TYPE_INTEGER);
         typeMap.put("mediumint", JAVA_TYPE_INTEGER);
         typeMap.put("tinyint", JAVA_TYPE_INTEGER);
+
+        // Types To Geometry
+        typeMap.put("geometry",JAVA_COMPLEX_TYPE_GEOMETRY);
 
         for (String typeStr : typeMap.keySet()) {
 

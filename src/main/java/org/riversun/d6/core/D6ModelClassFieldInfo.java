@@ -24,6 +24,7 @@
 package org.riversun.d6.core;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 /**
  * 
@@ -70,6 +71,11 @@ class D6ModelClassFieldInfo {
      * Field value of the model class
      */
     Object value;
+
+    /**
+     * RDMS specific composit type values
+     */
+    List<Object> valuesForSpecialType;
 
     @Override
     public String toString() {
