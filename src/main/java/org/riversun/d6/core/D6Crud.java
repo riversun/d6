@@ -271,6 +271,70 @@ public class D6Crud {
     }
 
     /**
+     * Update by raw SQL
+     * 
+     * @param preparedSQL
+     * @param preparedValues
+     * @return
+     */
+    public boolean execUpdateByRawSQL(String preparedSQL, Object[] preparedValues) {
+
+        boolean retVal = false;
+
+        final Connection conn = createConnection();
+
+        try {
+
+            PreparedStatement preparedStmt = null;
+
+            // There is a possibility that the error occurs in one single update
+            // statement.
+            // Therefore, turn the auto commit off.
+            conn.setAutoCommit(false);
+
+            preparedStmt = conn.prepareStatement(preparedSQL);
+
+            final StringBuilder logSb = new StringBuilder();
+
+            if (preparedValues != null) {
+                logSb.append("/ ");
+                for (int i = 0; i < preparedValues.length; i++) {
+
+                    setObject((i + 1), preparedStmt, preparedValues[i]);
+
+                    logSb.append("key(" + (i + 1) + ")=" + preparedValues[i]);
+                    logSb.append(" ");
+                }
+            }
+
+            log("#execUpdateWithRawSQL SQL=" + preparedSQL + " " + logSb.toString());
+
+            // execute SQL
+            preparedStmt.executeUpdate();
+
+            // finally commit
+            conn.commit();
+
+            retVal = true;
+
+        } catch (SQLException e) {
+
+            loge("#execUpdate", e);
+            retVal = false;
+
+        } finally {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                retVal = false;
+                loge("#execUpdate", e);
+            }
+        }
+        return retVal;
+
+    }
+
+    /**
      * Execute raw SQL for update
      * 
      * @param modelObj
@@ -866,6 +930,31 @@ public class D6Crud {
         DBConnCreator dbConnCreator = new DBConnCreator(mConnInfo);
         Connection conn = dbConnCreator.createDBConnection();
         return conn;
+    }
+
+    /**
+     * Get raw crud for raw SQL handling
+     * 
+     * @return
+     */
+    public RawCrud getRawCrud() {
+        return new RawCrud();
+    }
+
+    /**
+     * 
+     * Class of Raw Crud
+     *
+     */
+    public final class RawCrud {
+
+        public Connection createConnection() {
+            return D6Crud.this.createConnection();
+        }
+
+        public void setObject(int parameterIndex, PreparedStatement preparedStmt, Object value) throws SQLException {
+            D6Crud.this.setObject(parameterIndex, preparedStmt, value);
+        }
     }
 
     void log(String msg) {
