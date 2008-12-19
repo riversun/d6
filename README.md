@@ -3,6 +3,12 @@
 
 It is licensed under [MIT License](http://opensource.org/licenses/MIT).
 
+# Details
+See javadoc as follows.
+
+https://riversun.github.io/javadoc/d6/
+
+
 
 #Downloads
 ## maven
