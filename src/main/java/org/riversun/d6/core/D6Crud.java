@@ -402,104 +402,133 @@ public class D6Crud {
     }
 
     /**
-     * Insert the specified model object into the DB
-     * 
-     * @param modelObjects
-     * @return true:DB operation success false:failure
-     */
-    public boolean execInsert(D6Model[] modelObjects) {
-        final D6Inex includeExcludeColumnNames = null;
-        return execInsert(modelObjects, includeExcludeColumnNames);
-    }
+	 * Insert the specified model object into the DB
+	 * 
+	 * @param modelObjects
+	 * @return true:DB operation success false:failure
+	 */
+	public boolean execInsert(D6Model[] modelObjects) {
+		final D6Inex includeExcludeColumnNames = null;
+		return execInsert(modelObjects, includeExcludeColumnNames, false);
+	}
 
-    /**
-     * Insert the specified model object into the DB
-     * 
-     * @param modelObjects
-     * @param includeExcludeColumnNames
-     *            You can select either 'the column name you want to reflected
-     *            in the database' AND 'the column name you don't want to
-     *            reflect in the database'. When omitted (null specified)
-     *            ,reflects all properties in the model class has to be
-     *            reflected to the database.
-     * 
-     * @return true:DB operation success false:failure
-     */
-    public boolean execInsert(D6Model[] modelObjects, D6Inex includeExcludeColumnNames) {
-        log("#execInsert");
-        boolean retVal = false;
+	/**
+	 * Insert the specified model object into the DB ignoring duplicated entry
+	 * 
+	 * @param modelObjects
+	 * @return true:DB operation success false:failure
+	 */
+	public boolean execInsertIgnoreDuplicate(D6Model[] modelObjects) {
+		final D6Inex includeExcludeColumnNames = null;
+		return execInsert(modelObjects, includeExcludeColumnNames, true);
+	}
 
-        if (modelObjects == null) {
-            return retVal;
-        }
+	/**
+	 * Insert the specified model object into the DB
+	 * 
+	 * @param modelObjects
+	 * @param includeExcludeColumnNames
+	 *            You can select either 'the column name you want to reflected
+	 *            in the database' AND 'the column name you don't want to
+	 *            reflect in the database'. When omitted (null specified)
+	 *            ,reflects all properties in the model class has to be
+	 *            reflected to the database.
+	 * 
+	 * @return true:DB operation success false:failure
+	 */
+	public boolean execInsert(D6Model[] modelObjects, D6Inex includeExcludeColumnNames) {
+		boolean ignoreDuplicate = false;
+		return execInsert(modelObjects, includeExcludeColumnNames, ignoreDuplicate);
+	}
 
-        final int numOfModelObjects = modelObjects.length;
+	/**
+	 * Insert the specified model object into the DB
+	 * 
+	 * @param modelObjects
+	 * @param includeExcludeColumnNames
+	 *            You can select either 'the column name you want to reflected
+	 *            in the database' AND 'the column name you don't want to
+	 *            reflect in the database'. When omitted (null specified)
+	 *            ,reflects all properties in the model class has to be
+	 *            reflected to the database.
+	 * @param ignoreDuplicate if ignore duplicated entry
+	 * @return true:DB operation success false:failure
+	 */
+	public boolean execInsert(D6Model[] modelObjects, D6Inex includeExcludeColumnNames, boolean ignoreDuplicate) {
+		log("#execInsert");
+		boolean retVal = false;
 
-        if (numOfModelObjects == 0) {
-            return retVal;
-        }
+		if (modelObjects == null) {
+			return retVal;
+		}
 
-        final D6Model firstModelObject = modelObjects[0];
+		final int numOfModelObjects = modelObjects.length;
 
-        final D6CrudInsertHelper d6CrudInsertHelper = new D6CrudInsertHelper(firstModelObject.getClass());
+		if (numOfModelObjects == 0) {
+			return retVal;
+		}
 
-        final String insertSQL = d6CrudInsertHelper.createInsertPreparedSQLStatement(includeExcludeColumnNames);
+		final D6Model firstModelObject = modelObjects[0];
 
-        Connection conn = null;
+		final D6CrudInsertHelper d6CrudInsertHelper = new D6CrudInsertHelper(firstModelObject.getClass());
 
-        try {
+		final String insertSQL = d6CrudInsertHelper.createInsertPreparedSQLStatement(includeExcludeColumnNames, ignoreDuplicate);
 
-            PreparedStatement preparedStmt = null;
+		Connection conn = null;
 
-            conn = createConnection();
+		try {
 
-            // There is a possibility that the error occurs in one single insert
-            // statement.
-            // Therefore, turn the auto commit off.
-            conn.setAutoCommit(false);
+			PreparedStatement preparedStmt = null;
 
-            preparedStmt = conn.prepareStatement(insertSQL);
+			conn = createConnection();
 
-            for (int i = 0; i < modelObjects.length; i++) {
+			// There is a possibility that the error occurs in one single insert
+			// statement.
+			// Therefore, turn the auto commit off.
+			conn.setAutoCommit(false);
 
-                D6Model model = modelObjects[i];
+			preparedStmt = conn.prepareStatement(insertSQL);
 
-                d6CrudInsertHelper.map(model, preparedStmt, includeExcludeColumnNames);
+			for (int i = 0; i < modelObjects.length; i++) {
 
-                // execute SQL
-                preparedStmt.executeUpdate();
+				D6Model model = modelObjects[i];
 
-            }
+				d6CrudInsertHelper.map(model, preparedStmt, includeExcludeColumnNames);
 
-            // finally commit
-            conn.commit();
+				// execute SQL
+				preparedStmt.executeUpdate();
 
-            retVal = true;
+			}
 
-        } catch (SQLException e) {
+			// finally commit
+			conn.commit();
 
-            loge("#execInsert", e);
-            retVal = false;
+			retVal = true;
 
-        } catch (D6Exception e) {
+		} catch (SQLException e) {
 
-            // catch from helper
-            loge("#execInsert", e);
-            retVal = false;
-        } finally {
-            if (conn != null) {
-                try {
+			loge("#execInsert", e);
+			retVal = false;
 
-                    conn.close();
-                } catch (SQLException e) {
-                    loge("#execInsert", e);
-                    retVal = false;
-                }
-            }
-        }
-        return retVal;
+		} catch (D6Exception e) {
 
-    }
+			// catch from helper
+			loge("#execInsert", e);
+			retVal = false;
+		} finally {
+			if (conn != null) {
+				try {
+
+					conn.close();
+				} catch (SQLException e) {
+					loge("#execInsert", e);
+					retVal = false;
+				}
+			}
+		}
+		return retVal;
+
+	}
 
     // Methods_of_SELECT///////////////////////////////////////////////////
     /**

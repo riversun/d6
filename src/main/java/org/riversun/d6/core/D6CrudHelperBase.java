@@ -42,183 +42,190 @@ import org.riversun.d6.annotation.DBColumn;
  */
 public abstract class D6CrudHelperBase {
 
-    final Class<?> mModelClazz;
-    final Map<String, D6ModelClassFieldInfo> mColumnNameFieldInfoMap;
+	final Class<?> mModelClazz;
+	final Map<String, D6ModelClassFieldInfo> mColumnNameFieldInfoMap;
 
-    public D6CrudHelperBase(Class<? extends D6Model> modelClazz) {
-        this.mModelClazz = modelClazz;
-        this.mColumnNameFieldInfoMap = new ModelClazzColumnNameAndFieldMapper(mModelClazz).build();
+	public D6CrudHelperBase(Class<? extends D6Model> modelClazz) {
+		this.mModelClazz = modelClazz;
+		this.mColumnNameFieldInfoMap = new ModelClazzColumnNameAndFieldMapper(mModelClazz).build();
 
-    }
+	}
 
-    /**
-     * Returns Field info by columnName
-     * 
-     * @param columnName
-     * @return
-     */
-    final D6ModelClassFieldInfo getFieldInfo(String columnName) {
-        final D6ModelClassFieldInfo fieldInfo = mColumnNameFieldInfoMap.get(columnName);
-        return fieldInfo;
-    }
+	/**
+	 * Returns Field info by columnName
+	 * 
+	 * @param columnName
+	 * @return
+	 */
+	final D6ModelClassFieldInfo getFieldInfo(String columnName) {
+		final D6ModelClassFieldInfo fieldInfo = mColumnNameFieldInfoMap.get(columnName);
+		return fieldInfo;
+	}
 
-    /**
-     * Returns Set of columName of model class
-     * 
-     * @return
-     */
-    final Set<String> getAllColumnNames() {
-        final Set<String> columnNameSet = mColumnNameFieldInfoMap.keySet();
+	/**
+	 * Returns Set of columName of model class
+	 * 
+	 * @return
+	 */
+	final Set<String> getAllColumnNames() {
+		final Set<String> columnNameSet = mColumnNameFieldInfoMap.keySet();
 
-        // Returns clone of columnNameSet because {@see D6Inex} directly
-        // manipulats(almost delete) columnNameSet,so it effects
-        // mColumnNameFieldInfoMap.
-        // So, prevent original columnNameSet from getting edit.
-        return new LinkedHashSet<String>(columnNameSet);
-    }
+		// Returns clone of columnNameSet because {@see D6Inex} directly
+		// manipulats(almost delete) columnNameSet,so it effects
+		// mColumnNameFieldInfoMap.
+		// So, prevent original columnNameSet from getting edit.
+		return new LinkedHashSet<String>(columnNameSet);
+	}
 
-    /**
-     * Returns Set of primary key column name of model class
-     * 
-     * @return
-     */
-    final Set<String> getPrimaryColumnNames() {
-        final List<DBColumn> primaryKeyColumnList = getPrimaryKeyColumnList();
-        final Set<String> primaryKeyColumnNameSet = new LinkedHashSet<String>();
-        for (DBColumn col : primaryKeyColumnList) {
+	/**
+	 * Returns Set of primary key column name of model class
+	 * 
+	 * @return
+	 */
+	final Set<String> getPrimaryColumnNames() {
+		final List<DBColumn> primaryKeyColumnList = getPrimaryKeyColumnList();
+		final Set<String> primaryKeyColumnNameSet = new LinkedHashSet<String>();
+		for (DBColumn col : primaryKeyColumnList) {
 
-            primaryKeyColumnNameSet.add(col.columnName());
-        }
-        return primaryKeyColumnNameSet;
-    }
+			primaryKeyColumnNameSet.add(col.columnName());
+		}
+		return primaryKeyColumnNameSet;
+	}
 
-    /**
-     * Set value to preparedstatement with appropriate cast
-     * 
-     * @param parameterIndex
-     * @param preparedStatement
-     * @param fieldType
-     * @param fieldValue
-     * @throws Exception
-     */
-    void setValue(int parameterIndex, PreparedStatement preparedStatement, Class<?> fieldType, Object fieldValue) throws Exception {
+	/**
+	 * Set value to preparedstatement with appropriate cast
+	 * 
+	 * @param parameterIndex
+	 * @param preparedStatement
+	 * @param fieldType
+	 * @param fieldValue
+	 * @throws Exception
+	 */
+	void setValue(int parameterIndex, PreparedStatement preparedStatement, Class<?> fieldType, Object fieldValue) throws Exception {
 
-        try {
+		try {
 
-            if (fieldType == String.class) {
-                preparedStatement.setString(parameterIndex, (String) fieldValue);
-            } else if (fieldType == java.sql.Timestamp.class) {
-                preparedStatement.setTimestamp(parameterIndex, (java.sql.Timestamp) fieldValue);
-            } else if (fieldType == java.sql.Date.class) {
-                preparedStatement.setDate(parameterIndex, (java.sql.Date) fieldValue);
-            } else if (fieldType == java.sql.Time.class) {
-                preparedStatement.setTime(parameterIndex, (java.sql.Time) fieldValue);
-            } else if (fieldType == boolean.class || fieldType == Boolean.class) {
+			if (fieldType == String.class) {
+				preparedStatement.setString(parameterIndex, (String) fieldValue);
+			} else if (fieldType == java.sql.Timestamp.class) {
+				preparedStatement.setTimestamp(parameterIndex, (java.sql.Timestamp) fieldValue);
+			} else if (fieldType == java.sql.Date.class) {
+				preparedStatement.setDate(parameterIndex, (java.sql.Date) fieldValue);
+			} else if (fieldType == java.sql.Time.class) {
+				preparedStatement.setTime(parameterIndex, (java.sql.Time) fieldValue);
+			} else if (fieldType == boolean.class || fieldType == Boolean.class) {
 
-                if (fieldValue != null) {
-                    boolean boolValue = (boolean) (Boolean) fieldValue;
-                    preparedStatement.setInt(parameterIndex, (boolValue ? 1 : 0));
-                } else {
-                    preparedStatement.setInt(parameterIndex, 0);
+				if (fieldValue != null) {
+					boolean boolValue = (boolean) (Boolean) fieldValue;
+					preparedStatement.setInt(parameterIndex, (boolValue ? 1 : 0));
+				} else {
+					preparedStatement.setInt(parameterIndex, 0);
 
-                }
-            } else if (fieldType == int.class || fieldType == Integer.class) {
+				}
+			} else if (fieldType == int.class || fieldType == Integer.class) {
 
-                if (fieldValue != null) {
-                    preparedStatement.setInt(parameterIndex, (int) (Integer) fieldValue);
-                } else {
-                    preparedStatement.setNull(parameterIndex, java.sql.Types.INTEGER);
-                }
-            } else if (fieldType == long.class || fieldType == Long.class) {
+				if (fieldValue != null) {
+					preparedStatement.setInt(parameterIndex, (int) (Integer) fieldValue);
+				} else {
+					preparedStatement.setNull(parameterIndex, java.sql.Types.INTEGER);
+				}
+			} else if (fieldType == long.class || fieldType == Long.class) {
 
-                if (fieldValue != null) {
-                    preparedStatement.setLong(parameterIndex, (long) (Long) fieldValue);
-                } else {
-                    preparedStatement.setNull(parameterIndex, java.sql.Types.INTEGER);
-                }
-            } else {
-                final String msg = "Unknown data type. type=" + fieldType + " value=" + fieldValue;
-                loge(msg);
-                throw new RuntimeException(msg);
-            }
-        } catch (Exception e) {
-            loge("#setValue", e);
-            throw e;
-        }
+				if (fieldValue != null) {
+					preparedStatement.setLong(parameterIndex, (long) (Long) fieldValue);
+				} else {
+					preparedStatement.setNull(parameterIndex, java.sql.Types.INTEGER);
+				}
+			} else if (fieldType == float.class || fieldType == Float.class) {
 
-    }
+				if (fieldValue != null) {
+					preparedStatement.setFloat(parameterIndex, (float) (Float) fieldValue);
+				} else {
+					preparedStatement.setNull(parameterIndex, java.sql.Types.FLOAT);
+				}
+			} else {
+				final String msg = "Unknown data type. type=" + fieldType + " value=" + fieldValue;
+				loge(msg);
+				throw new RuntimeException(msg);
+			}
+		} catch (Exception e) {
+			loge("#setValue", e);
+			throw e;
+		}
 
-    /**
-     * get primary key field of model class
-     * 
-     * @return
-     */
-    final List<Field> getPrimaryKeyFieldList() {
+	}
 
-        final List<Field> fieldList = new ArrayList<Field>();
+	/**
+	 * get primary key field of model class
+	 * 
+	 * @return
+	 */
+	final List<Field> getPrimaryKeyFieldList() {
 
-        final Set<String> columnNameSet = getAllColumnNames();
+		final List<Field> fieldList = new ArrayList<Field>();
 
-        for (String columnName : columnNameSet) {
+		final Set<String> columnNameSet = getAllColumnNames();
 
-            final D6ModelClassFieldInfo fieldInfo = getFieldInfo(columnName);
+		for (String columnName : columnNameSet) {
 
-            final Field field = fieldInfo.field;
+			final D6ModelClassFieldInfo fieldInfo = getFieldInfo(columnName);
 
-            final DBColumn dbColumn = field.getAnnotation(DBColumn.class);
+			final Field field = fieldInfo.field;
 
-            if (dbColumn.isPrimaryKey()) {
+			final DBColumn dbColumn = field.getAnnotation(DBColumn.class);
 
-                fieldList.add(field);
-            }
-        }
+			if (dbColumn.isPrimaryKey()) {
 
-        return fieldList;
-    }
+				fieldList.add(field);
+			}
+		}
 
-    /**
-     * Returns DBColumn list of primary key
-     * 
-     * @return
-     */
-    final List<DBColumn> getPrimaryKeyColumnList() {
+		return fieldList;
+	}
 
-        final List<DBColumn> primaryKeyColumnList = new ArrayList<DBColumn>();
+	/**
+	 * Returns DBColumn list of primary key
+	 * 
+	 * @return
+	 */
+	final List<DBColumn> getPrimaryKeyColumnList() {
 
-        final Set<String> columnNameSet = getAllColumnNames();
+		final List<DBColumn> primaryKeyColumnList = new ArrayList<DBColumn>();
 
-        for (String columnName : columnNameSet) {
+		final Set<String> columnNameSet = getAllColumnNames();
 
-            final D6ModelClassFieldInfo fieldInfo = getFieldInfo(columnName);
+		for (String columnName : columnNameSet) {
 
-            final Field field = fieldInfo.field;
+			final D6ModelClassFieldInfo fieldInfo = getFieldInfo(columnName);
 
-            final DBColumn dbColumn = field.getAnnotation(DBColumn.class);
+			final Field field = fieldInfo.field;
 
-            if (dbColumn.isPrimaryKey()) {
+			final DBColumn dbColumn = field.getAnnotation(DBColumn.class);
 
-                primaryKeyColumnList.add(dbColumn);
-            }
-        }
+			if (dbColumn.isPrimaryKey()) {
 
-        return primaryKeyColumnList;
-    }
+				primaryKeyColumnList.add(dbColumn);
+			}
+		}
 
-    /**
-     * log method for standard log
-     * 
-     * @param msg
-     *            standard log message
-     */
-    abstract void log(String msg);
+		return primaryKeyColumnList;
+	}
 
-    /**
-     * log method for error log
-     * 
-     * @param msg
-     *            error log message
-     * @param e
-     *            related exceptions
-     */
-    abstract void loge(String msg, Exception... e);
+	/**
+	 * log method for standard log
+	 * 
+	 * @param msg
+	 *            standard log message
+	 */
+	abstract void log(String msg);
+
+	/**
+	 * log method for error log
+	 * 
+	 * @param msg
+	 *            error log message
+	 * @param e
+	 *            related exceptions
+	 */
+	abstract void loge(String msg, Exception... e);
 }
