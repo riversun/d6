@@ -23,6 +23,8 @@
  */
 package org.riversun.d6.core;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,7 +36,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.BasicDataSourceFactory;
 import org.riversun.d6.D6Model;
 import org.riversun.d6.DBConnCreator;
 import org.riversun.d6.DBConnInfo;
@@ -49,6 +55,7 @@ import org.riversun.d6.annotation.DBTable;
 public class D6Crud {
 
     DBConnInfo mConnInfo;
+    String mDbcpPropertyFile;
 
     /**
      * Constructor
@@ -57,6 +64,16 @@ public class D6Crud {
      */
     public D6Crud(DBConnInfo connInfo) {
         this.mConnInfo = connInfo;
+    }
+
+    /**
+     * Constructor
+     * 
+     * @param dbcpPropertyFile
+     *            property file name of DBCP library on classpath<br>
+     */
+    public D6Crud(String dbcpPropertyFile) {
+        mDbcpPropertyFile = dbcpPropertyFile;
     }
 
     // Methods_of_DELETE///////////////////////////////////////////////////
@@ -927,9 +944,30 @@ public class D6Crud {
      * @return
      */
     private Connection createConnection() {
-        DBConnCreator dbConnCreator = new DBConnCreator(mConnInfo);
-        Connection conn = dbConnCreator.createDBConnection();
-        return conn;
+
+        if (mConnInfo != null) {
+            DBConnCreator dbConnCreator = new DBConnCreator(mConnInfo);
+            Connection conn = dbConnCreator.createDBConnection();
+            return conn;
+        }
+        else if (mDbcpPropertyFile != null) {
+            Properties properties = new Properties();
+            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(mDbcpPropertyFile);
+            try {
+                properties.load(is);
+                DataSource ds;
+                ds = BasicDataSourceFactory.createDataSource(properties);
+                Connection conn = ds.getConnection();
+                return conn;
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+        return null;
+
     }
 
     /**
