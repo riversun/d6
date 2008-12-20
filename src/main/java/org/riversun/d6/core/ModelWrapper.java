@@ -24,6 +24,8 @@
 package org.riversun.d6.core;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -79,6 +81,23 @@ class ModelWrapper<T> {
 
         }
 
+        else {
+            // case field info is null
+
+            final String[] parts = columnName.split("__");
+
+            if (parts.length > 0 && mFieldMap.containsKey(parts[0])) {
+                // check is field composit type like MySQL's Geometry
+                D6ModelClassFieldInfo compositTypeFieldInfo = mFieldMap.get(parts[0]);
+                if (compositTypeFieldInfo.valuesForSpecialType == null) {
+                    compositTypeFieldInfo.valuesForSpecialType = new ArrayList<Object>();
+                }
+                compositTypeFieldInfo.valuesForSpecialType.add(value);
+
+            }
+
+        }
+
     }
 
     /**
@@ -125,6 +144,23 @@ class ModelWrapper<T> {
                         loge("#getAsObject " + msg);
 
                     }
+                } else {
+                    // value is null
+
+                    // check is this column CompositType like MySQL's Geometry
+                    final List<Object> compositObjValues = fieldInfo.valuesForSpecialType;
+
+                    if (field.getType() == org.riversun.d6.model.Geometry.class) {
+
+                        if (compositObjValues != null && compositObjValues.size() > 1) {
+                            final org.riversun.d6.model.Geometry newGeometryObj = new org.riversun.d6.model.Geometry();
+                            newGeometryObj.x = (Double) compositObjValues.get(0);
+                            newGeometryObj.y = (Double) compositObjValues.get(1);
+                            field.set(modelClassObj, newGeometryObj);
+                        }
+
+                    }
+
                 }
 
             }

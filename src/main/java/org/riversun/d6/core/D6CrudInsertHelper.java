@@ -120,8 +120,7 @@ public class D6CrudInsertHelper extends D6CrudHelperBase {
      */
     String createInsertPreparedSQLStatement() {
         final D6Inex includeExcludeColumnNames = null;
-        final boolean ignoreDuplicate=false;
-        return createInsertPreparedSQLStatement(includeExcludeColumnNames,ignoreDuplicate);
+        return createInsertPreparedSQLStatement(includeExcludeColumnNames);
 
     }
 
@@ -131,7 +130,7 @@ public class D6CrudInsertHelper extends D6CrudHelperBase {
      * @param includeExcludeColumnNames
      * @return
      */
-    String createInsertPreparedSQLStatement(D6Inex includeExcludeColumnNames,boolean ignoreDuplicate) {
+    String createInsertPreparedSQLStatement(D6Inex includeExcludeColumnNames) {
 
         final Set<String> columnNameSet = getAllColumnNames();
 
@@ -141,11 +140,8 @@ public class D6CrudInsertHelper extends D6CrudHelperBase {
         final DBTable table = mModelClazz.getAnnotation(DBTable.class);
         final String tableName = table.tableName();
 
-        if(ignoreDuplicate){
-        	sgSQL.append("INSERT IGNORE INTO " + tableName + " (");
-        }else{
         sgSQL.append("INSERT INTO " + tableName + " (");
-        }
+
         final StringGrabber sgColumnNames = new StringGrabber();
         final StringGrabber sgValues = new StringGrabber();
 

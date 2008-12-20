@@ -136,13 +136,6 @@ public abstract class D6CrudHelperBase {
                 } else {
                     preparedStatement.setNull(parameterIndex, java.sql.Types.INTEGER);
                 }
-            } else if (fieldType == float.class || fieldType == Float.class) {
-
-                if (fieldValue != null) {
-                    preparedStatement.setFloat(parameterIndex, (float) (Float) fieldValue);
-                } else {
-                    preparedStatement.setNull(parameterIndex, java.sql.Types.FLOAT);
-                }
             } else {
                 final String msg = "Unknown data type. type=" + fieldType + " value=" + fieldValue;
                 loge(msg);
