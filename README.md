@@ -11,7 +11,7 @@ It is licensed under [MIT License](http://opensource.org/licenses/MIT).
 <dependency>
   <groupId>org.riversun</groupId>
   <artifactId>d6</artifactId>
-  <version>0.5.0</version>
+  <version>0.6.0</version>
 </dependency>
 ```
 
