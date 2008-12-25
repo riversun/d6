@@ -74,7 +74,10 @@ public class ModelClazzColumnNameAndFieldMapper {
             final Field field = fields[i];
 
             final DBColumn annoColumn = field.getAnnotation(DBColumn.class);
-
+            if (annoColumn == null) {
+                // there is no column annotation.
+                continue;
+            }
             final String columnName = annoColumn.columnName();
             final String columnType = annoColumn.columnType();
 
