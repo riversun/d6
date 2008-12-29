@@ -437,6 +437,42 @@ public class D6Crud {
     }
 
     /**
+     * Returns the total number of the lines of rows corresponding to the
+     * specified model class
+     * 
+     * @param modelClazz
+     * @param whereCondition
+     * @return
+     */
+    public int execSelectCount(Class<? extends D6Model> modelClazz, WhereCondition whereCondition) {
+
+        final D6CrudSelectHelper d6CrudSelectHelper = new D6CrudSelectHelper(modelClazz);
+        final String sqlForSelectCount = d6CrudSelectHelper.getSQLForSelectCount();
+
+        String sql = sqlForSelectCount + " " + whereCondition.toSql();
+
+        return execSelectCount(sql);
+    }
+
+    /**
+     * Returns the total number of the lines of rows corresponding to the
+     * specified model class
+     * 
+     * @param modelClazz
+     * @param whereCondition
+     * @return
+     */
+    public int execSelectCount(Class<? extends D6Model> modelClazz, WhereCondition whereCondition, Object[] searchKeys) {
+
+        final D6CrudSelectHelper d6CrudSelectHelper = new D6CrudSelectHelper(modelClazz);
+        final String sqlForSelectCount = d6CrudSelectHelper.getSQLForSelectCount();
+
+        String sql = sqlForSelectCount + " " + whereCondition.toSql();
+
+        return execSelectCount(sql, searchKeys);
+    }
+
+    /**
      * Execute the SQL for number search<br>
      * ex.SELECT COUNT(*) FROM table;
      * 
