@@ -515,4 +515,36 @@ public class TestD6Crud {
         assertEquals(5, numberOfUsers);
     }
 
+    @Test
+    public void test_execSelectCount_2_by_whereConditionObject_01() throws Exception {
+
+        // initialize DB
+        createDB();
+
+        final D6Crud crud = createCrud();
+        final WhereCondition whereCondition = new WhereCondition();
+
+        whereCondition.Col("married_flag").Equals().Val(1);
+        final int numberOfUsers = crud.execSelectCount(org.riversun.d6.test.model.User.class, whereCondition);
+
+        assertEquals(3, numberOfUsers);
+    }
+
+    @Test
+    public void test_execSelectCount_3_by_whereConditionObject_02() throws Exception {
+
+        // initialize DB
+        createDB();
+
+        final D6Crud crud = createCrud();
+        final WhereCondition whereCondition = new WhereCondition();
+
+        // use wild card
+        whereCondition.Col("married_flag").Equals().ValWildCard();
+
+        final int numberOfUsers = crud.execSelectCount(org.riversun.d6.test.model.User.class, whereCondition, new Object[] { "1" });
+
+        assertEquals(3, numberOfUsers);
+    }
+
 }
