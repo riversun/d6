@@ -1,6 +1,8 @@
 # Overview
 'd6' is a java library for Lightweight O/R mapper with ease of use 
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.riversun/d6/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.riversun/d6)
+
 It is licensed under [MIT License](http://opensource.org/licenses/MIT).
 
 # Details
