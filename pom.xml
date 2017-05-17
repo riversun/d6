@@ -5,7 +5,7 @@
 
 	<groupId>org.riversun</groupId>
 	<artifactId>d6</artifactId>
-	<version>0.6.1</version>
+	<version>0.6.2</version>
 	<packaging>jar</packaging>
 	<name>d6</name>
 	<description>Easy to manipulate String

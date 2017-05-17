@@ -47,7 +47,8 @@ public abstract class D6CrudHelperBase {
 
 	public D6CrudHelperBase(Class<? extends D6Model> modelClazz) {
 		this.mModelClazz = modelClazz;
-		this.mColumnNameFieldInfoMap = new ModelClazzColumnNameAndFieldMapper(mModelClazz).build();
+		this.mColumnNameFieldInfoMap = new ModelClazzColumnNameAndFieldMapper(
+				mModelClazz).build();
 
 	}
 
@@ -58,7 +59,8 @@ public abstract class D6CrudHelperBase {
 	 * @return
 	 */
 	final D6ModelClassFieldInfo getFieldInfo(String columnName) {
-		final D6ModelClassFieldInfo fieldInfo = mColumnNameFieldInfoMap.get(columnName);
+		final D6ModelClassFieldInfo fieldInfo = mColumnNameFieldInfoMap
+				.get(columnName);
 		return fieldInfo;
 	}
 
@@ -101,23 +103,29 @@ public abstract class D6CrudHelperBase {
 	 * @param fieldValue
 	 * @throws Exception
 	 */
-	void setValue(int parameterIndex, PreparedStatement preparedStatement, Class<?> fieldType, Object fieldValue) throws Exception {
+	void setValue(int parameterIndex, PreparedStatement preparedStatement,
+			Class<?> fieldType, Object fieldValue) throws Exception {
 
 		try {
 
 			if (fieldType == String.class) {
-				preparedStatement.setString(parameterIndex, (String) fieldValue);
+				preparedStatement
+						.setString(parameterIndex, (String) fieldValue);
 			} else if (fieldType == java.sql.Timestamp.class) {
-				preparedStatement.setTimestamp(parameterIndex, (java.sql.Timestamp) fieldValue);
+				preparedStatement.setTimestamp(parameterIndex,
+						(java.sql.Timestamp) fieldValue);
 			} else if (fieldType == java.sql.Date.class) {
-				preparedStatement.setDate(parameterIndex, (java.sql.Date) fieldValue);
+				preparedStatement.setDate(parameterIndex,
+						(java.sql.Date) fieldValue);
 			} else if (fieldType == java.sql.Time.class) {
-				preparedStatement.setTime(parameterIndex, (java.sql.Time) fieldValue);
+				preparedStatement.setTime(parameterIndex,
+						(java.sql.Time) fieldValue);
 			} else if (fieldType == boolean.class || fieldType == Boolean.class) {
 
 				if (fieldValue != null) {
 					boolean boolValue = (boolean) (Boolean) fieldValue;
-					preparedStatement.setInt(parameterIndex, (boolValue ? 1 : 0));
+					preparedStatement.setInt(parameterIndex,
+							(boolValue ? 1 : 0));
 				} else {
 					preparedStatement.setInt(parameterIndex, 0);
 
@@ -125,26 +133,44 @@ public abstract class D6CrudHelperBase {
 			} else if (fieldType == int.class || fieldType == Integer.class) {
 
 				if (fieldValue != null) {
-					preparedStatement.setInt(parameterIndex, (int) (Integer) fieldValue);
+					preparedStatement.setInt(parameterIndex,
+							(int) (Integer) fieldValue);
 				} else {
-					preparedStatement.setNull(parameterIndex, java.sql.Types.INTEGER);
+					preparedStatement.setNull(parameterIndex,
+							java.sql.Types.INTEGER);
 				}
 			} else if (fieldType == long.class || fieldType == Long.class) {
 
 				if (fieldValue != null) {
-					preparedStatement.setLong(parameterIndex, (long) (Long) fieldValue);
+					preparedStatement.setLong(parameterIndex,
+							(long) (Long) fieldValue);
 				} else {
-					preparedStatement.setNull(parameterIndex, java.sql.Types.INTEGER);
+					preparedStatement.setNull(parameterIndex,
+							java.sql.Types.INTEGER);
 				}
 			} else if (fieldType == float.class || fieldType == Float.class) {
 
 				if (fieldValue != null) {
-					preparedStatement.setFloat(parameterIndex, (float) (Float) fieldValue);
+					preparedStatement.setFloat(parameterIndex,
+							(float) (Float) fieldValue);
 				} else {
-					preparedStatement.setNull(parameterIndex, java.sql.Types.FLOAT);
+					preparedStatement.setNull(parameterIndex,
+							java.sql.Types.FLOAT);
 				}
+
+			} else if (fieldType == double.class || fieldType == Double.class) {
+
+				if (fieldValue != null) {
+					preparedStatement.setDouble(parameterIndex,
+							(double) (Double) fieldValue);
+				} else {
+					preparedStatement.setNull(parameterIndex,
+							java.sql.Types.DOUBLE);
+				}
+
 			} else {
-				final String msg = "Unknown data type. type=" + fieldType + " value=" + fieldValue;
+				final String msg = "Unknown data type. type=" + fieldType
+						+ " value=" + fieldValue;
 				loge(msg);
 				throw new RuntimeException(msg);
 			}
