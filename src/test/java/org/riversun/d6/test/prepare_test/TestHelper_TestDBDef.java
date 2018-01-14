@@ -10,7 +10,7 @@ import org.riversun.d6.DBConnInfo;
 public class TestHelper_TestDBDef {
 
     // EDIT HERE FOR YOUR ENVIRONMENT
-    public static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+    public static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";//"com.mysql.jdbc.Driver";
 
     // EDIT HERE FOR YOUR ENVIRONMENT
     public static final String DATABASE_URL = "jdbc:mysql://localhost/";
