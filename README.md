@@ -100,7 +100,7 @@ public class Main {
 
 Now, you can get the source code like this.
 
-```
+```java
 import org.riversun.d6.D6Model;
 import org.riversun.d6.annotation.DBColumn;
 import org.riversun.d6.annotation.DBTable;
