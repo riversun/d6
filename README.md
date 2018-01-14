@@ -105,42 +105,45 @@ import org.riversun.d6.D6Model;
 import org.riversun.d6.annotation.DBColumn;
 import org.riversun.d6.annotation.DBTable;
 
-@DBTable(tableName = "article")
-public class Article implements D6Model {
-	@DBColumn(columnName = "entry_id", columnType = "int(11)", isNullable = false, isPrimaryKey = true)
-	public Integer entryId;
+@DBTable(tableName="article")
+public class Article implements D6Model
+{
+@DBColumn(columnName="entry_id", columnType="int(11)", isNullable=false, isPrimaryKey=true)
+public Integer entryId;
 
-	@DBColumn(columnName = "site_id", columnType = "int(11)", isNullable = false)
-	public Integer siteId;
+@DBColumn(columnName="site_id", columnType="int(11)", isNullable=false)
+public Integer siteId;
 
-	@DBColumn(columnName = "published_at", columnType = "timestamp", isNullable = false)
-	public java.sql.Time publishedAt;
+@DBColumn(columnName="published_at", columnType="timestamp", isNullable=false)
+public java.sql.Timestamp publishedAt;
 
-	@DBColumn(columnName = "updated_at", columnType = "timestamp", isNullable = false)
-	public java.sql.Time updatedAt;
+@DBColumn(columnName="updated_at", columnType="timestamp", isNullable=false)
+public java.sql.Timestamp updatedAt;
 
-	@DBColumn(columnName = "title", columnType = "varchar(255)")
-	public String title;
+@DBColumn(columnName="title", columnType="varchar(255)")
+public String title;
 
-	@DBColumn(columnName = "link", columnType = "text")
-	public String link;
+@DBColumn(columnName="link", columnType="text")
+public String link;
 
-	@DBColumn(columnName = "description", columnType = "text")
-	public String description;
+@DBColumn(columnName="description", columnType="text")
+public String description;
 
-	@DBColumn(columnName = "content", columnType = "text")
-	public String content;
+@DBColumn(columnName="content", columnType="text")
+public String content;
 
-	@DBColumn(columnName = "fulltext_col", columnType = "text")
-	public String fulltextCol;
+@DBColumn(columnName="fulltext_col", columnType="text")
+public String fulltextCol;
 
-	@DBColumn(columnName = "author", columnType = "varchar(255)")
-	public String author;
+@DBColumn(columnName="author", columnType="varchar(255)")
+public String author;
 
-	@DBColumn(columnName = "category", columnType = "varchar(255)")
-	public String category;
+@DBColumn(columnName="category", columnType="varchar(255)")
+public String category;
+
 
 }
+
 ```
 
 
