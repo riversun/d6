@@ -8,9 +8,10 @@ It is licensed under [MIT License](http://opensource.org/licenses/MIT).
 
 # Quick Start
 
+## Generate O/R mapping Model classes
 **Step1.Create Database on MySQL 5.7**
 
-```
+```bash
 show databases;
 
 create database if not exists test_db;
@@ -61,7 +62,7 @@ mysql> desc article;
 
 Write like below to get a java source code(model class) for that table.
 
-```
+```java
 
 import org.riversun.d6.predev.D6JavaModelGen4MySQL;
 
@@ -145,6 +146,119 @@ public String category;
 }
 
 ```
+
+## Create DB connection class
+
+```java
+mport org.riversun.d6.DBConnInfo;
+
+public class DBDef {
+
+	public static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
+	public static final String DATABASE_URL = "jdbc:mysql://localhost/";
+	public static final String USER = "root";
+	public static final String PASS = "root_password";
+	public static final String DBNAME = "test_db";
+	public static final String OPTION="?characterEncoding=UTF-8&serverTimezone=UTC";
+
+	public static DBConnInfo createDBConnInfo() {
+		DBConnInfo dbConnInfo = new DBConnInfo();
+
+		dbConnInfo.DBDriver = JDBC_DRIVER;
+		dbConnInfo.DBUrl = DATABASE_URL + DBNAME+OPTION;
+		dbConnInfo.DBUser = USER;
+		dbConnInfo.DBPassword = PASS;
+
+		return dbConnInfo;
+	}
+}
+```
+
+## Create DAO(Data Access Object) class
+
+```java
+import java.sql.Timestamp;
+import org.riversun.d6.DBConnInfo;
+import org.riversun.d6.core.D6Crud;
+import org.riversun.d6.core.D6Inex;
+import org.riversun.d6.core.D6Logger;
+
+public class ExampleDao {
+
+  public static void main(String[] args) {
+    D6Logger.DEBUG = true;
+
+    ExampleDao dao = new ExampleDao();
+
+    Article article = new Article();
+    article.entryId = 0;
+    article.siteId = 0;
+    article.publishedAt = new Timestamp(System.currentTimeMillis());
+    article.updatedAt = article.publishedAt;
+    article.title = "my title";
+    article.link = "http://www.google.com";
+    article.description = "some descriptions";
+    article.content = "some contents";
+    article.author = "foo";
+    article.category = "bar";
+
+    dao.addArticle(article);
+  }
+
+  /**
+   * Do Select
+   * 
+   * @return
+   */
+  public Article[] getArticles() {
+
+    final D6Crud crud = getCrud();
+
+    final Article[] result = (Article[]) crud.execSelectTable(
+        "SELECT * FROM article",
+        Article.class);
+
+    return result;
+
+  }
+
+  /**
+   * Do Insert
+   * 
+   * @param article
+   * @return
+   */
+  public boolean addArticle(Article article) {
+    final D6Crud crud = getCrud();
+
+    // Specify a column name not to be included at the time of update
+    final D6Inex inclusiveExclusive = new D6Inex();
+    inclusiveExclusive.addExcludeColumn("fulltext_col");
+    inclusiveExclusive.addExcludeColumn("entry_id");
+
+    final boolean isSuccess = crud.execInsert(new Article[] { article }, inclusiveExclusive);
+
+    return isSuccess;
+  }
+
+  private D6Crud mCrud = null;
+
+  /**
+   * Returns CRUD object to operate the RDBMS
+   * 
+   * @return
+   */
+  private D6Crud getCrud() {
+    if (mCrud == null) {
+      final DBConnInfo dbConnInfo = DBDef.createDBConnInfo();
+      mCrud = new D6Crud(dbConnInfo);
+    }
+    return mCrud;
+  }
+}
+```
+
+
 
 
 # Details
