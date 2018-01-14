@@ -150,7 +150,7 @@ public String category;
 ## Create DB connection class
 
 ```java
-mport org.riversun.d6.DBConnInfo;
+import org.riversun.d6.DBConnInfo;
 
 public class DBDef {
 
