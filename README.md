@@ -8,8 +8,34 @@ It is licensed under [MIT License](http://opensource.org/licenses/MIT).
 
 # Quick Start
 
-Here is an example description for MySQL.
-The DDL of your table is like below.
+**Step1.Create Database on MySQL 5.7**
+
+```
+show databases;
+
+create database if not exists test_db;
+
+use test_db;
+
+CREATE TABLE article ( 
+ entry_id INT NOT NULL PRIMARY KEY ,
+ site_id INT NOT NULL ,
+ published_at TIMESTAMP ,
+ updated_at TIMESTAMP ,
+ title VARCHAR(255) NULL ,
+ link TEXT NULL COMMENT ,
+ description TEXT NULL ,
+ content TEXT NULL ,
+ fulltext_col TEXT AS (CONCAT(title, ' ', description,' ', content)) STORED ,
+ author VARCHAR(255) ,
+ category VARCHAR(255) ,
+ FULLTEXT INDEX full_text_index (fulltext_col) 
+) COLLATE='utf8_bin' ENGINE=InnoDB;
+```
+
+**Step2.Show description of the table**
+
+The description of your table is like below.
 
 ```
 mysql> desc article;
@@ -31,9 +57,9 @@ mysql> desc article;
 
 ```
 
-Example.Generate model classes
+**Step3.Generate model classes**
 
-Every easy way to generate model classes from MySQL's description.
+Write like below to get a java source code(model class) for that table.
 
 ```
 
@@ -70,8 +96,9 @@ public class Main {
 }
 ```
 
+**Step4.Run to generate source code**
 
-You can get the source code like this.
+Now, you can get the source code like this.
 
 ```
 import org.riversun.d6.D6Model;
@@ -124,7 +151,7 @@ https://riversun.github.io/javadoc/d6/
 
 
 
-#Downloads
+# Downloads
 ## maven
 - Add dependencies to maven pom.xml file.
 ```xml
