@@ -12,6 +12,7 @@
 # for build
 target
 build
+bin
 
 # for  mac
 .DS_Store
