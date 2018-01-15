@@ -275,7 +275,7 @@ https://riversun.github.io/javadoc/d6/
 <dependency>
   <groupId>org.riversun</groupId>
   <artifactId>d6</artifactId>
-  <version>0.6.2</version>
+  <version>0.7.0</version>
 </dependency>
 ```
 
