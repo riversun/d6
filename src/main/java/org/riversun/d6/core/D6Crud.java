@@ -54,982 +54,983 @@ import org.riversun.d6.annotation.DBTable;
  */
 public class D6Crud {
 
-    DBConnInfo mConnInfo;
-    String mDbcpPropertyFile;
+  DBConnInfo mConnInfo;
+  String mDbcpPropertyFile;
 
-    /**
-     * Constructor
-     * 
-     * @param connInfo
-     */
-    public D6Crud(DBConnInfo connInfo) {
-        this.mConnInfo = connInfo;
+  /**
+   * Constructor
+   * 
+   * @param connInfo
+   */
+  public D6Crud(DBConnInfo connInfo) {
+    this.mConnInfo = connInfo;
+  }
+
+  /**
+   * Constructor
+   * 
+   * @param dbcpPropertyFile
+   *          property file name of DBCP library on classpath<br>
+   */
+  public D6Crud(String dbcpPropertyFile) {
+    mDbcpPropertyFile = dbcpPropertyFile;
+  }
+
+  // Methods_of_DELETE///////////////////////////////////////////////////
+
+  /**
+   * Delete the appropriate line in the specified model object
+   * 
+   * @param modelObj
+   * @return true:DB operation success false:failure
+   */
+  public boolean execDelete(Class<? extends D6Model> modelObj) {
+
+    boolean retVal = false;
+
+    final D6CrudDeleteHelper dh = new D6CrudDeleteHelper(modelObj);
+    final String updateSQL = dh.createDeleteAllPreparedSQLStatement();
+
+    log("#execDelete model=" + modelObj + " deleteSQL=" + updateSQL);
+
+    final Connection conn = createConnection();
+
+    try {
+
+      PreparedStatement preparedStmt = null;
+
+      // There is a possibility that the error occurs in one single delete
+      // statement.
+      // Therefore, turn the auto commit off.
+      conn.setAutoCommit(false);
+
+      preparedStmt = conn.prepareStatement(updateSQL);
+
+      // execute SQL
+      preparedStmt.executeUpdate();
+
+      // Finally, commit.
+      conn.commit();
+
+      retVal = true;
+
+    } catch (SQLException e) {
+
+      loge("#execDelete", e);
+      retVal = false;
+
+    } finally {
+      try {
+        conn.close();
+      } catch (SQLException e) {
+        retVal = false;
+        loge("#execDelete", e);
+      }
+    }
+    return retVal;
+
+  }
+
+  /**
+   * Delete the appropriate lines in the specified model object
+   * 
+   * @param modelObj
+   * @return true:DB operation success false:failure
+   */
+  public boolean execDelete(D6Model modelObj) {
+    return execDelete(new D6Model[] { modelObj });
+  }
+
+  /**
+   * Delete the appropriate lines in specified model objects
+   * 
+   * @param modelObjs
+   * @return true:DB operation success false:failure
+   */
+  public boolean execDelete(D6Model[] modelObjs) {
+
+    if (modelObjs == null || modelObjs.length == 0) {
+      return false;
     }
 
-    /**
-     * Constructor
-     * 
-     * @param dbcpPropertyFile
-     *            property file name of DBCP library on classpath<br>
-     */
-    public D6Crud(String dbcpPropertyFile) {
-        mDbcpPropertyFile = dbcpPropertyFile;
+    boolean retVal = false;
+
+    final D6CrudDeleteHelper dh = new D6CrudDeleteHelper(modelObjs[0].getClass());
+    final String deleteSQL = dh.createDeletePreparedSQLStatement();
+
+    log("#execDelete modelObjs=" + modelObjs + " delete SQL=" + deleteSQL);
+
+    final Connection conn = createConnection();
+
+    try {
+
+      PreparedStatement preparedStmt = null;
+
+      // There is a possibility that the error occurs in one single delete
+      // statement.
+      // Therefore, turn the auto commit off.
+      conn.setAutoCommit(false);
+
+      preparedStmt = conn.prepareStatement(deleteSQL);
+
+      for (D6Model modelObj : modelObjs)
+      {
+        dh.map(modelObj, preparedStmt);
+
+        // execute SQL
+        preparedStmt.executeUpdate();
+      }
+
+      // Finally, commit.
+      conn.commit();
+
+      retVal = true;
+
+    } catch (SQLException e) {
+
+      loge("#execDelete", e);
+      retVal = false;
+
+    } catch (D6Exception e) {
+
+      // catch from helper
+      loge("#execDelete", e);
+      retVal = false;
+
+    } finally {
+      try {
+        conn.close();
+      } catch (SQLException e) {
+        retVal = false;
+        loge("#execDelete", e);
+      }
+    }
+    return retVal;
+
+  }
+
+  /**
+   * Update Model Object
+   * 
+   * @param modelObj
+   * @return true:DB operation success false:failure
+   */
+  public boolean execUpdate(D6Model modelObj) {
+    final D6Inex includeExcludeColumnNames = null;
+    return execUpdate(modelObj, includeExcludeColumnNames);
+  }
+
+  /**
+   * Update Model Object
+   * 
+   * @param modelObj
+   * @param includeExcludeColumnNames
+   * @return true:DB operation success false:failure
+   */
+  public boolean execUpdate(D6Model modelObj, D6Inex includeExcludeColumnNames) {
+
+    boolean retVal = false;
+
+    if (modelObj == null) {
+      return retVal;
     }
 
-    // Methods_of_DELETE///////////////////////////////////////////////////
+    final D6CrudUpdateHelper d6CrudUpdateHelper = new D6CrudUpdateHelper(modelObj.getClass());
 
-    /**
-     * Delete the appropriate line in the specified model object
-     * 
-     * @param modelObj
-     * @return true:DB operation success false:failure
-     */
-    public boolean execDelete(Class<? extends D6Model> modelObj) {
+    final String updateSQL = d6CrudUpdateHelper.createUpdatePreparedSQLStatement(includeExcludeColumnNames);
 
-        boolean retVal = false;
+    log("#execUpdate updateSQL=" + updateSQL);
 
-        final D6CrudDeleteHelper dh = new D6CrudDeleteHelper(modelObj);
-        final String updateSQL = dh.createDeleteAllPreparedSQLStatement();
+    final Connection conn = createConnection();
 
-        log("#execDelete model=" + modelObj + " deleteSQL=" + updateSQL);
+    try {
 
-        final Connection conn = createConnection();
+      PreparedStatement preparedStmt = null;
 
+      // There is a possibility that the error occurs in one single update
+      // statement.
+      // Therefore, turn the auto commit off.
+      conn.setAutoCommit(false);
+
+      preparedStmt = conn.prepareStatement(updateSQL);
+
+      d6CrudUpdateHelper.map(modelObj, preparedStmt, includeExcludeColumnNames);
+
+      // execute SQL
+      preparedStmt.executeUpdate();
+
+      // finally commit
+      conn.commit();
+
+      retVal = true;
+
+    } catch (SQLException e) {
+
+      loge("#execUpdate", e);
+      retVal = false;
+
+    } catch (D6Exception e) {
+
+      // catch from helper
+      loge("#execUpdate", e);
+      retVal = false;
+
+    } finally {
+      try {
+        conn.close();
+      } catch (SQLException e) {
+        retVal = false;
+        loge("#execUpdate", e);
+      }
+    }
+    return retVal;
+
+  }
+
+  /**
+   * Update by raw SQL
+   * 
+   * @param preparedSQL
+   * @param preparedValues
+   * @return
+   */
+  public boolean execUpdateByRawSQL(String preparedSQL, Object[] preparedValues) {
+
+    boolean retVal = false;
+
+    final Connection conn = createConnection();
+
+    try {
+
+      PreparedStatement preparedStmt = null;
+
+      // There is a possibility that the error occurs in one single update
+      // statement.
+      // Therefore, turn the auto commit off.
+      conn.setAutoCommit(false);
+
+      preparedStmt = conn.prepareStatement(preparedSQL);
+
+      final StringBuilder logSb = new StringBuilder();
+
+      if (preparedValues != null) {
+        logSb.append("/ ");
+        for (int i = 0; i < preparedValues.length; i++) {
+
+          setObject((i + 1), preparedStmt, preparedValues[i]);
+
+          logSb.append("key(" + (i + 1) + ")=" + preparedValues[i]);
+          logSb.append(" ");
+        }
+      }
+
+      log("#execUpdateWithRawSQL SQL=" + preparedSQL + " " + logSb.toString());
+
+      // execute SQL
+      preparedStmt.executeUpdate();
+
+      // finally commit
+      conn.commit();
+
+      retVal = true;
+
+    } catch (SQLException e) {
+
+      loge("#execUpdate", e);
+      retVal = false;
+
+    } finally {
+      try {
+        conn.close();
+      } catch (SQLException e) {
+        retVal = false;
+        loge("#execUpdate", e);
+      }
+    }
+    return retVal;
+
+  }
+
+  /**
+   * Execute raw SQL for update
+   * 
+   * @param modelObj
+   * @param includeExcludeColumnNames
+   * @return true:DB operation success false:failure
+   */
+  public boolean execUpdateByRawSQL(String updateRawSQL) {
+
+    boolean retVal = false;
+
+    log("#execUpdateByRawSQL updateRawSQL=" + updateRawSQL);
+
+    final Connection conn = createConnection();
+
+    try {
+
+      Statement stmt = null;
+
+      // There is a possibility that the error occurs in one single update
+      // statement.
+      // Therefore, turn the auto commit off.
+      conn.setAutoCommit(false);
+
+      stmt = conn.createStatement();
+      stmt.executeUpdate(updateRawSQL);
+
+      // finally,commit
+      conn.commit();
+
+      retVal = true;
+
+    } catch (SQLException e) {
+
+      loge("#execUpdateByRawSQL", e);
+      retVal = false;
+
+    } finally {
+
+      try {
+        conn.close();
+      } catch (SQLException e) {
+        retVal = false;
+        loge("#execUpdateByRawSQL", e);
+      }
+    }
+    return retVal;
+
+  }
+
+  /**
+   * Insert the specified model object into the DB
+   * 
+   * @param modelObjects
+   * @return true:DB operation success false:failure
+   */
+  public boolean execInsert(D6Model[] modelObjects) {
+    final D6Inex includeExcludeColumnNames = null;
+    return execInsert(modelObjects, includeExcludeColumnNames, false);
+  }
+
+  /**
+   * Insert the specified model object into the DB ignoring duplicated entry
+   * 
+   * @param modelObjects
+   * @return true:DB operation success false:failure
+   */
+  public boolean execInsertIgnoreDuplicate(D6Model[] modelObjects) {
+    final D6Inex includeExcludeColumnNames = null;
+    return execInsert(modelObjects, includeExcludeColumnNames, true);
+  }
+
+  /**
+   * Insert the specified model object into the DB
+   * 
+   * @param modelObjects
+   * @param includeExcludeColumnNames
+   *          You can select either 'the column name you want to reflected
+   *          in the database' AND 'the column name you don't want to
+   *          reflect in the database'. When omitted (null specified)
+   *          ,reflects all properties in the model class has to be
+   *          reflected to the database.
+   * 
+   * @return true:DB operation success false:failure
+   */
+  public boolean execInsert(D6Model[] modelObjects, D6Inex includeExcludeColumnNames) {
+    boolean ignoreDuplicate = false;
+    return execInsert(modelObjects, includeExcludeColumnNames, ignoreDuplicate);
+  }
+
+  /**
+   * Insert the specified model object into the DB
+   * 
+   * @param modelObjects
+   * @param includeExcludeColumnNames
+   *          You can select either 'the column name you want to reflected
+   *          in the database' AND 'the column name you don't want to
+   *          reflect in the database'. When omitted (null specified)
+   *          ,reflects all properties in the model class has to be
+   *          reflected to the database.
+   * @param ignoreDuplicate
+   *          if ignore duplicated entry
+   * @return true:DB operation success false:failure
+   */
+  public boolean execInsert(D6Model[] modelObjects, D6Inex includeExcludeColumnNames, boolean ignoreDuplicate) {
+    log("#execInsert");
+    boolean retVal = false;
+
+    if (modelObjects == null) {
+      return retVal;
+    }
+
+    final int numOfModelObjects = modelObjects.length;
+
+    if (numOfModelObjects == 0) {
+      return retVal;
+    }
+
+    final D6Model firstModelObject = modelObjects[0];
+
+    final D6CrudInsertHelper d6CrudInsertHelper = new D6CrudInsertHelper(firstModelObject.getClass());
+
+    final String insertSQL = d6CrudInsertHelper.createInsertPreparedSQLStatement(includeExcludeColumnNames, ignoreDuplicate);
+
+    Connection conn = null;
+
+    try {
+
+      PreparedStatement preparedStmt = null;
+
+      conn = createConnection();
+
+      // There is a possibility that the error occurs in one single insert
+      // statement.
+      // Therefore, turn the auto commit off.
+      conn.setAutoCommit(false);
+
+      preparedStmt = conn.prepareStatement(insertSQL);
+
+      for (int i = 0; i < modelObjects.length; i++) {
+
+        D6Model model = modelObjects[i];
+
+        d6CrudInsertHelper.map(model, preparedStmt, includeExcludeColumnNames);
+
+        // execute SQL
+        preparedStmt.executeUpdate();
+
+      }
+
+      // finally commit
+      conn.commit();
+
+      retVal = true;
+
+    } catch (SQLException e) {
+
+      loge("#execInsert", e);
+      retVal = false;
+
+    } catch (D6Exception e) {
+
+      // catch from helper
+      loge("#execInsert", e);
+      retVal = false;
+    } finally {
+      if (conn != null) {
         try {
 
-            PreparedStatement preparedStmt = null;
-
-            // There is a possibility that the error occurs in one single delete
-            // statement.
-            // Therefore, turn the auto commit off.
-            conn.setAutoCommit(false);
-
-            preparedStmt = conn.prepareStatement(updateSQL);
-
-            // execute SQL
-            preparedStmt.executeUpdate();
-
-            // Finally, commit.
-            conn.commit();
-
-            retVal = true;
-
+          conn.close();
         } catch (SQLException e) {
-
-            loge("#execDelete", e);
-            retVal = false;
-
-        } finally {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                retVal = false;
-                loge("#execDelete", e);
-            }
+          loge("#execInsert", e);
+          retVal = false;
         }
-        return retVal;
-
+      }
     }
+    return retVal;
 
-    /**
-     * Delete the appropriate lines in the specified model object
-     * 
-     * @param modelObj
-     * @return true:DB operation success false:failure
-     */
-    public boolean execDelete(D6Model modelObj) {
-        return execDelete(new D6Model[] { modelObj });
-    }
+  }
 
-    /**
-     * Delete the appropriate lines in specified model objects
-     * 
-     * @param modelObjs
-     * @return true:DB operation success false:failure
-     */
-    public boolean execDelete(D6Model[] modelObjs) {
+  // Methods_of_SELECT///////////////////////////////////////////////////
+  /**
+   * Returns the total number of the lines of rows corresponding to the
+   * specified model class
+   * 
+   * @param modelClazz
+   * @return true:DB operation success false:failure
+   */
+  public int execSelectCount(Class<? extends D6Model> modelClazz) {
 
-        if (modelObjs == null || modelObjs.length == 0) {
-            return false;
+    final D6CrudSelectHelper d6CrudSelectHelper = new D6CrudSelectHelper(modelClazz);
+    final String sqlForSelectCount = d6CrudSelectHelper.getSQLForSelectCount();
+
+    return execSelectCount(sqlForSelectCount);
+  }
+
+  /**
+   * Returns the total number of the lines of rows corresponding to the
+   * specified model class
+   * 
+   * @param modelClazz
+   * @param whereCondition
+   * @return
+   */
+  public int execSelectCount(Class<? extends D6Model> modelClazz, WhereCondition whereCondition) {
+
+    final D6CrudSelectHelper d6CrudSelectHelper = new D6CrudSelectHelper(modelClazz);
+    final String sqlForSelectCount = d6CrudSelectHelper.getSQLForSelectCount();
+
+    String sql = sqlForSelectCount + " " + whereCondition.toSql();
+
+    return execSelectCount(sql);
+  }
+
+  /**
+   * Returns the total number of the lines of rows corresponding to the
+   * specified model class
+   * 
+   * @param modelClazz
+   * @param whereCondition
+   * @return
+   */
+  public int execSelectCount(Class<? extends D6Model> modelClazz, WhereCondition whereCondition, Object[] searchKeys) {
+
+    final D6CrudSelectHelper d6CrudSelectHelper = new D6CrudSelectHelper(modelClazz);
+    final String sqlForSelectCount = d6CrudSelectHelper.getSQLForSelectCount();
+
+    String sql = sqlForSelectCount + " " + whereCondition.toSql();
+
+    return execSelectCount(sql, searchKeys);
+  }
+
+  /**
+   * Execute the SQL for number search<br>
+   * ex.SELECT COUNT(*) FROM table;
+   * 
+   * @param preparedSql
+   * @param searchKeys
+   * @return number of result
+   */
+  public int execSelectCount(String preparedSql) {
+    return execSelectCount(preparedSql, null);
+  }
+
+  /**
+   * Execute the SQL for number search<br>
+   * 
+   * @param preparedSql
+   * @param searchKeys
+   * @return number of result
+   */
+  public int execSelectCount(String preparedSql, Object[] searchKeys) {
+    log("#execSelectCount preparedSql=" + preparedSql + " searchKeys=" + searchKeys);
+    int retVal = 0;
+
+    PreparedStatement preparedStmt = null;
+    ResultSet rs = null;
+
+    final Connection conn = createConnection();
+
+    try {
+
+      preparedStmt = conn.prepareStatement(preparedSql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+
+      final StringBuilder logSb = new StringBuilder();
+
+      if (searchKeys != null) {
+        logSb.append("/ ");
+        for (int i = 0; i < searchKeys.length; i++) {
+
+          setObject((i + 1), preparedStmt, searchKeys[i]);
+
+          logSb.append("key(" + (i + 1) + ")=" + searchKeys[i]);
+          logSb.append(" ");
         }
+      }
 
-        boolean retVal = false;
+      log("#execSelectCount SQL=" + preparedSql + " " + logSb.toString());
 
-        final D6CrudDeleteHelper dh = new D6CrudDeleteHelper(modelObjs[0].getClass());
-        final String deleteSQL = dh.createDeletePreparedSQLStatement();
+      // execute SQL
+      rs = preparedStmt.executeQuery();
 
-        log("#execDelete modelObjs=" + modelObjs + " delete SQL=" + deleteSQL);
+      while (rs.next()) {
+        retVal = rs.getInt(1);
+      }
 
-        final Connection conn = createConnection();
+    } catch (Exception e) {
+      loge("#execSelectCount", e);
 
-        try {
-
-            PreparedStatement preparedStmt = null;
-
-            // There is a possibility that the error occurs in one single delete
-            // statement.
-            // Therefore, turn the auto commit off.
-            conn.setAutoCommit(false);
-
-            preparedStmt = conn.prepareStatement(deleteSQL);
-
-            for (D6Model modelObj : modelObjs)
-            {
-                dh.map(modelObj, preparedStmt);
-
-                // execute SQL
-                preparedStmt.executeUpdate();
-            }
-
-            // Finally, commit.
-            conn.commit();
-
-            retVal = true;
-
-        } catch (SQLException e) {
-
-            loge("#execDelete", e);
-            retVal = false;
-
-        } catch (D6Exception e) {
-
-            // catch from helper
-            loge("#execDelete", e);
-            retVal = false;
-
-        } finally {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                retVal = false;
-                loge("#execDelete", e);
-            }
+    } finally {
+      try {
+        if (rs != null) {
+          rs.close();
         }
-        return retVal;
-
-    }
-
-    /**
-     * Update Model Object
-     * 
-     * @param modelObj
-     * @return true:DB operation success false:failure
-     */
-    public boolean execUpdate(D6Model modelObj) {
-        final D6Inex includeExcludeColumnNames = null;
-        return execUpdate(modelObj, includeExcludeColumnNames);
-    }
-
-    /**
-     * Update Model Object
-     * 
-     * @param modelObj
-     * @param includeExcludeColumnNames
-     * @return true:DB operation success false:failure
-     */
-    public boolean execUpdate(D6Model modelObj, D6Inex includeExcludeColumnNames) {
-
-        boolean retVal = false;
-
-        if (modelObj == null) {
-            return retVal;
+        if (preparedStmt != null) {
+          preparedStmt.close();
         }
-
-        final D6CrudUpdateHelper d6CrudUpdateHelper = new D6CrudUpdateHelper(modelObj.getClass());
-
-        final String updateSQL = d6CrudUpdateHelper.createUpdatePreparedSQLStatement(includeExcludeColumnNames);
-
-        log("#execUpdate updateSQL=" + updateSQL);
-
-        final Connection conn = createConnection();
-
-        try {
-
-            PreparedStatement preparedStmt = null;
-
-            // There is a possibility that the error occurs in one single update
-            // statement.
-            // Therefore, turn the auto commit off.
-            conn.setAutoCommit(false);
-
-            preparedStmt = conn.prepareStatement(updateSQL);
-
-            d6CrudUpdateHelper.map(modelObj, preparedStmt, includeExcludeColumnNames);
-
-            // execute SQL
-            preparedStmt.executeUpdate();
-
-            // finally commit
-            conn.commit();
-
-            retVal = true;
-
-        } catch (SQLException e) {
-
-            loge("#execUpdate", e);
-            retVal = false;
-
-        } catch (D6Exception e) {
-
-            // catch from helper
-            loge("#execUpdate", e);
-            retVal = false;
-
-        } finally {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                retVal = false;
-                loge("#execUpdate", e);
-            }
+        if (conn != null) {
+          conn.close();
         }
-        return retVal;
+      } catch (SQLException e) {
 
+        loge("#execSelectCount", e);
+      }
     }
+    return retVal;
+
+  }
+
+  /**
+   * Execute select statement and returns the all lines of rows corresponding
+   * to the specified model class as array of Objects
+   * 
+   * @param modelClazz
+   * @return
+   */
+  public <T extends D6Model> T[] execSelectTable(Class<T> modelClazz) {
+
+    final DBTable dbTable = modelClazz.getAnnotation(DBTable.class);
+    final String dbTableName = dbTable.tableName();
+    return (T[]) execSelectTable("SELECT * FROM " + dbTableName, modelClazz);
+  }
+
+  public Object[] execSelectTable(Class<? extends D6Model> modelClazz, WhereCondition whereCondition) {
+    return execSelectTable(modelClazz, whereCondition, null);
+  }
+
+  public Object[] execSelectTable(Class<? extends D6Model> modelClazz, WhereCondition whereCondition, Object[] searchKeys) {
+
+    final DBTable dbTable = modelClazz.getAnnotation(DBTable.class);
+    final String dbTableName = dbTable.tableName();
+
+    final String preparedSql = "SELECT * FROM " + dbTableName + " " + whereCondition.toSql();
+
+    final Map<Class<?>, List<Object>> result = execSelectTableWithJoin(preparedSql, searchKeys, modelClazz);
+
+    final List<Object> rowList = result.get(modelClazz);
+
+    return toArray(rowList, modelClazz);
+  }
+
+  /**
+   * Execute select statement for the single table.
+   * 
+   * @param preparedSql
+   * @param modelClazz
+   * @return
+   */
+  public <T extends D6Model> T[] execSelectTable(String preparedSql, Class<T> modelClazz) {
+    return execSelectTable(preparedSql, null, modelClazz);
+  }
+
+  /**
+   * Execute select statement for the single table. <br>
+   * <br>
+   * -About SQL<br>
+   * You can use prepared SQL.<br>
+   * <br>
+   * In addition,you can also use non-wildcard ('?') SQL (=raw SQL).In this
+   * case searchKeys must be null or empty array(size 0 array).<br>
+   * When you use a wildcard('?'), you must not include the "'"(=>single
+   * quotes) to preparedSQL.<br>
+   * 
+   * <br>
+   * -About processing<br>
+   * Used when you execute the SQL that is JOIN multiple tables.<br>
+   * 
+   * In this method, you can specify more than one model class.<br>
+   * 
+   * When the column name specified in the annotation of the model classes is
+   * included in the resultSet,<br>
+   * a value corresponding to the column name is set to the corresponding
+   * field of model objects.<br>
+   * 
+   * In other words, if multiple model class has the same column name, values
+   * in the resultSet is set in the same manner for each mode class.<br>
+   * 
+   * <br>
+   * 
+   * @param preparedSql
+   * @param searchKeys
+   * @param modelClazz
+   * @return
+   */
+  public  <T extends D6Model> T[] execSelectTable(String preparedSql, Object[] searchKeys, Class<T> modelClazz) {
 
-    /**
-     * Update by raw SQL
-     * 
-     * @param preparedSQL
-     * @param preparedValues
-     * @return
-     */
-    public boolean execUpdateByRawSQL(String preparedSQL, Object[] preparedValues) {
-
-        boolean retVal = false;
-
-        final Connection conn = createConnection();
-
-        try {
-
-            PreparedStatement preparedStmt = null;
-
-            // There is a possibility that the error occurs in one single update
-            // statement.
-            // Therefore, turn the auto commit off.
-            conn.setAutoCommit(false);
-
-            preparedStmt = conn.prepareStatement(preparedSQL);
-
-            final StringBuilder logSb = new StringBuilder();
-
-            if (preparedValues != null) {
-                logSb.append("/ ");
-                for (int i = 0; i < preparedValues.length; i++) {
-
-                    setObject((i + 1), preparedStmt, preparedValues[i]);
-
-                    logSb.append("key(" + (i + 1) + ")=" + preparedValues[i]);
-                    logSb.append(" ");
-                }
-            }
-
-            log("#execUpdateWithRawSQL SQL=" + preparedSQL + " " + logSb.toString());
-
-            // execute SQL
-            preparedStmt.executeUpdate();
-
-            // finally commit
-            conn.commit();
-
-            retVal = true;
-
-        } catch (SQLException e) {
-
-            loge("#execUpdate", e);
-            retVal = false;
-
-        } finally {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                retVal = false;
-                loge("#execUpdate", e);
-            }
-        }
-        return retVal;
-
-    }
-
-    /**
-     * Execute raw SQL for update
-     * 
-     * @param modelObj
-     * @param includeExcludeColumnNames
-     * @return true:DB operation success false:failure
-     */
-    public boolean execUpdateByRawSQL(String updateRawSQL) {
-
-        boolean retVal = false;
-
-        log("#execUpdateByRawSQL updateRawSQL=" + updateRawSQL);
-
-        final Connection conn = createConnection();
-
-        try {
-
-            Statement stmt = null;
-
-            // There is a possibility that the error occurs in one single update
-            // statement.
-            // Therefore, turn the auto commit off.
-            conn.setAutoCommit(false);
-
-            stmt = conn.createStatement();
-            stmt.executeUpdate(updateRawSQL);
-
-            // finally,commit
-            conn.commit();
-
-            retVal = true;
-
-        } catch (SQLException e) {
-
-            loge("#execUpdateByRawSQL", e);
-            retVal = false;
-
-        } finally {
-
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                retVal = false;
-                loge("#execUpdateByRawSQL", e);
-            }
-        }
-        return retVal;
-
-    }
-
-    /**
-	 * Insert the specified model object into the DB
-	 * 
-	 * @param modelObjects
-	 * @return true:DB operation success false:failure
-	 */
-	public boolean execInsert(D6Model[] modelObjects) {
-		final D6Inex includeExcludeColumnNames = null;
-		return execInsert(modelObjects, includeExcludeColumnNames, false);
-	}
-
-	/**
-	 * Insert the specified model object into the DB ignoring duplicated entry
-	 * 
-	 * @param modelObjects
-	 * @return true:DB operation success false:failure
-	 */
-	public boolean execInsertIgnoreDuplicate(D6Model[] modelObjects) {
-		final D6Inex includeExcludeColumnNames = null;
-		return execInsert(modelObjects, includeExcludeColumnNames, true);
-	}
-
-	/**
-	 * Insert the specified model object into the DB
-	 * 
-	 * @param modelObjects
-	 * @param includeExcludeColumnNames
-	 *            You can select either 'the column name you want to reflected
-	 *            in the database' AND 'the column name you don't want to
-	 *            reflect in the database'. When omitted (null specified)
-	 *            ,reflects all properties in the model class has to be
-	 *            reflected to the database.
-	 * 
-	 * @return true:DB operation success false:failure
-	 */
-	public boolean execInsert(D6Model[] modelObjects, D6Inex includeExcludeColumnNames) {
-		boolean ignoreDuplicate = false;
-		return execInsert(modelObjects, includeExcludeColumnNames, ignoreDuplicate);
-	}
-
-	/**
-	 * Insert the specified model object into the DB
-	 * 
-	 * @param modelObjects
-	 * @param includeExcludeColumnNames
-	 *            You can select either 'the column name you want to reflected
-	 *            in the database' AND 'the column name you don't want to
-	 *            reflect in the database'. When omitted (null specified)
-	 *            ,reflects all properties in the model class has to be
-	 *            reflected to the database.
-	 * @param ignoreDuplicate if ignore duplicated entry
-	 * @return true:DB operation success false:failure
-	 */
-	public boolean execInsert(D6Model[] modelObjects, D6Inex includeExcludeColumnNames, boolean ignoreDuplicate) {
-		log("#execInsert");
-		boolean retVal = false;
-
-		if (modelObjects == null) {
-			return retVal;
-		}
-
-		final int numOfModelObjects = modelObjects.length;
-
-		if (numOfModelObjects == 0) {
-			return retVal;
-		}
-
-		final D6Model firstModelObject = modelObjects[0];
-
-		final D6CrudInsertHelper d6CrudInsertHelper = new D6CrudInsertHelper(firstModelObject.getClass());
-
-		final String insertSQL = d6CrudInsertHelper.createInsertPreparedSQLStatement(includeExcludeColumnNames, ignoreDuplicate);
-
-		Connection conn = null;
-
-		try {
-
-			PreparedStatement preparedStmt = null;
-
-			conn = createConnection();
-
-			// There is a possibility that the error occurs in one single insert
-			// statement.
-			// Therefore, turn the auto commit off.
-			conn.setAutoCommit(false);
-
-			preparedStmt = conn.prepareStatement(insertSQL);
-
-			for (int i = 0; i < modelObjects.length; i++) {
-
-				D6Model model = modelObjects[i];
-
-				d6CrudInsertHelper.map(model, preparedStmt, includeExcludeColumnNames);
-
-				// execute SQL
-				preparedStmt.executeUpdate();
-
-			}
-
-			// finally commit
-			conn.commit();
-
-			retVal = true;
-
-		} catch (SQLException e) {
-
-			loge("#execInsert", e);
-			retVal = false;
-
-		} catch (D6Exception e) {
-
-			// catch from helper
-			loge("#execInsert", e);
-			retVal = false;
-		} finally {
-			if (conn != null) {
-				try {
-
-					conn.close();
-				} catch (SQLException e) {
-					loge("#execInsert", e);
-					retVal = false;
-				}
-			}
-		}
-		return retVal;
-
-	}
-
-    // Methods_of_SELECT///////////////////////////////////////////////////
-    /**
-     * Returns the total number of the lines of rows corresponding to the
-     * specified model class
-     * 
-     * @param modelClazz
-     * @return true:DB operation success false:failure
-     */
-    public int execSelectCount(Class<? extends D6Model> modelClazz) {
-
-        final D6CrudSelectHelper d6CrudSelectHelper = new D6CrudSelectHelper(modelClazz);
-        final String sqlForSelectCount = d6CrudSelectHelper.getSQLForSelectCount();
-
-        return execSelectCount(sqlForSelectCount);
-    }
-
-    /**
-     * Returns the total number of the lines of rows corresponding to the
-     * specified model class
-     * 
-     * @param modelClazz
-     * @param whereCondition
-     * @return
-     */
-    public int execSelectCount(Class<? extends D6Model> modelClazz, WhereCondition whereCondition) {
-
-        final D6CrudSelectHelper d6CrudSelectHelper = new D6CrudSelectHelper(modelClazz);
-        final String sqlForSelectCount = d6CrudSelectHelper.getSQLForSelectCount();
-
-        String sql = sqlForSelectCount + " " + whereCondition.toSql();
-
-        return execSelectCount(sql);
-    }
-
-    /**
-     * Returns the total number of the lines of rows corresponding to the
-     * specified model class
-     * 
-     * @param modelClazz
-     * @param whereCondition
-     * @return
-     */
-    public int execSelectCount(Class<? extends D6Model> modelClazz, WhereCondition whereCondition, Object[] searchKeys) {
-
-        final D6CrudSelectHelper d6CrudSelectHelper = new D6CrudSelectHelper(modelClazz);
-        final String sqlForSelectCount = d6CrudSelectHelper.getSQLForSelectCount();
-
-        String sql = sqlForSelectCount + " " + whereCondition.toSql();
-
-        return execSelectCount(sql, searchKeys);
-    }
-
-    /**
-     * Execute the SQL for number search<br>
-     * ex.SELECT COUNT(*) FROM table;
-     * 
-     * @param preparedSql
-     * @param searchKeys
-     * @return number of result
-     */
-    public int execSelectCount(String preparedSql) {
-        return execSelectCount(preparedSql, null);
-    }
-
-    /**
-     * Execute the SQL for number search<br>
-     * 
-     * @param preparedSql
-     * @param searchKeys
-     * @return number of result
-     */
-    public int execSelectCount(String preparedSql, Object[] searchKeys) {
-        log("#execSelectCount preparedSql=" + preparedSql + " searchKeys=" + searchKeys);
-        int retVal = 0;
-
-        PreparedStatement preparedStmt = null;
-        ResultSet rs = null;
-
-        final Connection conn = createConnection();
-
-        try {
-
-            preparedStmt = conn.prepareStatement(preparedSql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-
-            final StringBuilder logSb = new StringBuilder();
-
-            if (searchKeys != null) {
-                logSb.append("/ ");
-                for (int i = 0; i < searchKeys.length; i++) {
-
-                    setObject((i + 1), preparedStmt, searchKeys[i]);
-
-                    logSb.append("key(" + (i + 1) + ")=" + searchKeys[i]);
-                    logSb.append(" ");
-                }
-            }
-
-            log("#execSelectCount SQL=" + preparedSql + " " + logSb.toString());
-
-            // execute SQL
-            rs = preparedStmt.executeQuery();
-
-            while (rs.next()) {
-                retVal = rs.getInt(1);
-            }
-
-        } catch (Exception e) {
-            loge("#execSelectCount", e);
-
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (preparedStmt != null) {
-                    preparedStmt.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-
-                loge("#execSelectCount", e);
-            }
-        }
-        return retVal;
-
-    }
-
-    /**
-     * Execute select statement and returns the all lines of rows corresponding
-     * to the specified model class as array of Objects
-     * 
-     * @param modelClazz
-     * @return
-     */
-    public Object[] execSelectTable(Class<? extends D6Model> modelClazz) {
-
-        final DBTable dbTable = modelClazz.getAnnotation(DBTable.class);
-        final String dbTableName = dbTable.tableName();
-        return execSelectTable("SELECT * FROM " + dbTableName, modelClazz);
-    }
-
-    public Object[] execSelectTable(Class<? extends D6Model> modelClazz, WhereCondition whereCondition) {
-        return execSelectTable(modelClazz, whereCondition, null);
-    }
-
-    public Object[] execSelectTable(Class<? extends D6Model> modelClazz, WhereCondition whereCondition, Object[] searchKeys) {
-
-        final DBTable dbTable = modelClazz.getAnnotation(DBTable.class);
-        final String dbTableName = dbTable.tableName();
-
-        final String preparedSql = "SELECT * FROM " + dbTableName + " " + whereCondition.toSql();
-
-        final Map<Class<?>, List<Object>> result = execSelectTableWithJoin(preparedSql, searchKeys, modelClazz);
-
-        final List<Object> rowList = result.get(modelClazz);
-
-        return toArray(rowList, modelClazz);
-    }
-
-    /**
-     * Execute select statement for the single table.
-     * 
-     * @param preparedSql
-     * @param modelClazz
-     * @return
-     */
-    public Object[] execSelectTable(String preparedSql, Class<? extends D6Model> modelClazz) {
-        return execSelectTable(preparedSql, null, modelClazz);
-    }
-
-    /**
-     * Execute select statement for the single table. <br>
-     * <br>
-     * -About SQL<br>
-     * You can use prepared SQL.<br>
-     * <br>
-     * In addition,you can also use non-wildcard ('?') SQL (=raw SQL).In this
-     * case searchKeys must be null or empty array(size 0 array).<br>
-     * When you use a wildcard('?'), you must not include the "'"(=>single
-     * quotes) to preparedSQL.<br>
-     * 
-     * <br>
-     * -About processing<br>
-     * Used when you execute the SQL that is JOIN multiple tables.<br>
-     * 
-     * In this method, you can specify more than one model class.<br>
-     * 
-     * When the column name specified in the annotation of the model classes is
-     * included in the resultSet,<br>
-     * a value corresponding to the column name is set to the corresponding
-     * field of model objects.<br>
-     * 
-     * In other words, if multiple model class has the same column name, values
-     * in the resultSet is set in the same manner for each mode class.<br>
-     * 
-     * <br>
-     * 
-     * @param preparedSql
-     * @param searchKeys
-     * @param modelClazz
-     * @return
-     */
-    public Object[] execSelectTable(String preparedSql, Object[] searchKeys, Class<? extends D6Model> modelClazz) {
-
-        @SuppressWarnings("unchecked")
-        final Map<Class<?>, List<Object>> result = execSelectTableWithJoin(preparedSql, searchKeys, modelClazz);
-
-        final List<Object> rowList = result.get(modelClazz);
-
-        return toArray(rowList, modelClazz);
-    }
-
-    /**
-     * 
-     * Execute select statement for the joined multiple table.<br>
-     * 
-     * {@see #execSelectTableWithJoin(String, String[], Class...)}<br>
-     * 
-     * @param preparedSql
-     * @param modelClazz
-     * @return
-     */
     @SuppressWarnings("unchecked")
-    public Map<Class<?>, List<Object>> execSelectTableWithJoin(String preparedSql, Class<? extends D6Model>... modelClazz) {
-        return execSelectTableWithJoin(preparedSql, null, modelClazz);
+    final Map<Class<?>, List<Object>> result = execSelectTableWithJoin(preparedSql, searchKeys, modelClazz);
+
+    final List<Object> rowList = result.get(modelClazz);
+
+    return toArray(rowList, modelClazz);
+  }
+
+  /**
+   * 
+   * Execute select statement for the joined multiple table.<br>
+   * 
+   * {@see #execSelectTableWithJoin(String, String[], Class...)}<br>
+   * 
+   * @param preparedSql
+   * @param modelClazz
+   * @return
+   */
+  @SuppressWarnings("unchecked")
+  public Map<Class<?>, List<Object>> execSelectTableWithJoin(String preparedSql, Class<? extends D6Model>... modelClazz) {
+    return execSelectTableWithJoin(preparedSql, null, modelClazz);
+  }
+
+  /**
+   * Execute select statement for the joined multiple table.<br>
+   * <br>
+   * <br>
+   * -About SQL<br>
+   * You can use prepared SQL.<br>
+   * <br>
+   * In addition,you can also use non-wildcard ('?') SQL (=raw SQL).In this
+   * case searchKeys must be null or empty array(size 0 array).<br>
+   * When you use a wildcard('?'), you must not include the "'"(=>single
+   * quotes) to preparedSQL.<br>
+   * 
+   * <br>
+   * -About processing<br>
+   * Used when you execute the SQL that is JOIN multiple tables.<br>
+   * 
+   * In this method, you can specify more than one model class.<br>
+   * 
+   * When the column name specified in the annotation of the model classes is
+   * included in the resultSet,<br>
+   * a value corresponding to the column name is set to the corresponding
+   * field of model objects.<br>
+   * 
+   * In other words, if multiple model class has the same column name, values
+   * in the resultSet is set in the same manner for each mode class.<br>
+   * 
+   * 
+   * @param preparedSql
+   * @param searchKeys
+   *          If the prepared SQL includes a wild card (?), Here is list of
+   *          the string to be substituted for wild card.
+   * 
+   *          The order of value to be included in the array must be the
+   *          same as order of appearance of the wild card.
+   * 
+   * @param modelClazz
+   *          More than one model class in a comma-separated manner for
+   *          mapping the results
+   * 
+   * @return SQL execution result is returned as MAP. <br>
+   *         MAP,key is the model class, value is of instance of the model
+   *         class specified as key.
+   * 
+   */
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public Map<Class<?>, List<Object>> execSelectTableWithJoin(String preparedSql, Object[] searchKeys, Class<? extends D6Model>... modelClazz) {
+    log("#execSelectTableWithJoin preparedSql=" + preparedSql + " searchKeys=" + searchKeys + " modelClazz=" + modelClazz);
+    final Map<Class<?>, List<Object>> resultMap = new HashMap<Class<?>, List<Object>>();
+
+    final List<ModelWrapper> modelList = new ArrayList<ModelWrapper>();
+
+    for (int i = 0; i < modelClazz.length; i++) {
+
+      @SuppressWarnings("unchecked")
+      final ModelWrapper model = new ModelWrapper(modelClazz[i]);
+      modelList.add(model);
     }
 
-    /**
-     * Execute select statement for the joined multiple table.<br>
-     * <br>
-     * <br>
-     * -About SQL<br>
-     * You can use prepared SQL.<br>
-     * <br>
-     * In addition,you can also use non-wildcard ('?') SQL (=raw SQL).In this
-     * case searchKeys must be null or empty array(size 0 array).<br>
-     * When you use a wildcard('?'), you must not include the "'"(=>single
-     * quotes) to preparedSQL.<br>
-     * 
-     * <br>
-     * -About processing<br>
-     * Used when you execute the SQL that is JOIN multiple tables.<br>
-     * 
-     * In this method, you can specify more than one model class.<br>
-     * 
-     * When the column name specified in the annotation of the model classes is
-     * included in the resultSet,<br>
-     * a value corresponding to the column name is set to the corresponding
-     * field of model objects.<br>
-     * 
-     * In other words, if multiple model class has the same column name, values
-     * in the resultSet is set in the same manner for each mode class.<br>
-     * 
-     * 
-     * @param preparedSql
-     * @param searchKeys
-     *            If the prepared SQL includes a wild card (?), Here is list of
-     *            the string to be substituted for wild card.
-     * 
-     *            The order of value to be included in the array must be the
-     *            same as order of appearance of the wild card.
-     * 
-     * @param modelClazz
-     *            More than one model class in a comma-separated manner for
-     *            mapping the results
-     * 
-     * @return SQL execution result is returned as MAP. <br>
-     *         MAP,key is the model class, value is of instance of the model
-     *         class specified as key.
-     * 
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Map<Class<?>, List<Object>> execSelectTableWithJoin(String preparedSql, Object[] searchKeys, Class<? extends D6Model>... modelClazz) {
-        log("#execSelectTableWithJoin preparedSql=" + preparedSql + " searchKeys=" + searchKeys + " modelClazz=" + modelClazz);
-        final Map<Class<?>, List<Object>> resultMap = new HashMap<Class<?>, List<Object>>();
+    PreparedStatement preparedStmt = null;
+    ResultSet rs = null;
 
-        final List<ModelWrapper> modelList = new ArrayList<ModelWrapper>();
+    final Connection conn = createConnection();
 
-        for (int i = 0; i < modelClazz.length; i++) {
+    try {
 
-            @SuppressWarnings("unchecked")
-            final ModelWrapper model = new ModelWrapper(modelClazz[i]);
-            modelList.add(model);
+      preparedStmt = conn.prepareStatement(preparedSql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+
+      final StringBuilder logSb = new StringBuilder();
+      if (searchKeys != null) {
+        logSb.append("/ ");
+        for (int i = 0; i < searchKeys.length; i++) {
+          //
+          Object object = searchKeys[i];
+
+          setObject((i + 1), preparedStmt, object);
+
+          logSb.append("key(" + (i + 1) + ")=" + searchKeys[i]);
+          logSb.append(" ");
+        }
+      }
+
+      log("#execSelectTableWithJoin SQL=" + preparedSql + " " + logSb.toString());
+
+      // execute SQL
+      rs = preparedStmt.executeQuery();
+
+      final ResultSetMetaData rsMetaData = rs.getMetaData();
+      final int numberOfColumns = rsMetaData.getColumnCount();
+      final List<String> columnNameList = new ArrayList<String>();
+
+      // cache column names of this result set
+      for (int i = 0; i < numberOfColumns; i++) {
+        String columnName = rsMetaData.getColumnName(i + 1);
+        columnNameList.add(columnName);
+      }
+
+      while (rs.next()) {
+
+        // Processing of a single resultset[begin]=============
+
+        for (int i = 0; i < numberOfColumns; i++) {
+
+          // Get from the current resultSet
+          final String columnName = columnNameList.get(i);
+
+          final Object value = rs.getObject(i + 1);
+
+          // Set the values to all the properties of model class (You
+          // know property is corresponding to each column of the DB)
+          // via modelWrapper
+          for (ModelWrapper model : modelList) {
+            // set value to model wrapper
+            model.setValue(columnName, value);
+          }
         }
 
-        PreparedStatement preparedStmt = null;
-        ResultSet rs = null;
+        // Processing of a single resultset[end]=============
 
-        final Connection conn = createConnection();
+        for (ModelWrapper model : modelList) {
 
-        try {
+          final Class<?> modelClazzName = model.getClazz();
 
-            preparedStmt = conn.prepareStatement(preparedSql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+          List<Object> modelObjectList = resultMap.get(modelClazzName);
 
-            final StringBuilder logSb = new StringBuilder();
-            if (searchKeys != null) {
-                logSb.append("/ ");
-                for (int i = 0; i < searchKeys.length; i++) {
-                    //
-                    Object object = searchKeys[i];
+          // Generate the result list corresponding to a certain model
+          // class if the list have not been generated.
+          if (modelObjectList == null) {
+            modelObjectList = new ArrayList<Object>();
+            resultMap.put(modelClazzName, modelObjectList);
+          }
 
-                    setObject((i + 1), preparedStmt, object);
+          // Generates a model object having a property value held in
+          // the model wrapper, and stores the model object in the
+          // modelObjectList
+          final Object resultModelObject = model.getAsObject();
+          modelObjectList.add(resultModelObject);
 
-                    logSb.append("key(" + (i + 1) + ")=" + searchKeys[i]);
-                    logSb.append(" ");
-                }
-            }
-
-            log("#execSelectTableWithJoin SQL=" + preparedSql + " " + logSb.toString());
-
-            // execute SQL
-            rs = preparedStmt.executeQuery();
-
-            final ResultSetMetaData rsMetaData = rs.getMetaData();
-            final int numberOfColumns = rsMetaData.getColumnCount();
-            final List<String> columnNameList = new ArrayList<String>();
-
-            // cache column names of this result set
-            for (int i = 0; i < numberOfColumns; i++) {
-                String columnName = rsMetaData.getColumnName(i + 1);
-                columnNameList.add(columnName);
-            }
-
-            while (rs.next()) {
-
-                // Processing of a single resultset[begin]=============
-
-                for (int i = 0; i < numberOfColumns; i++) {
-
-                    // Get from the current resultSet
-                    final String columnName = columnNameList.get(i);
-
-                    final Object value = rs.getObject(i + 1);
-
-                    // Set the values to all the properties of model class (You
-                    // know property is corresponding to each column of the DB)
-                    // via modelWrapper
-                    for (ModelWrapper model : modelList) {
-                        // set value to model wrapper
-                        model.setValue(columnName, value);
-                    }
-                }
-
-                // Processing of a single resultset[end]=============
-
-                for (ModelWrapper model : modelList) {
-
-                    final Class<?> modelClazzName = model.getClazz();
-
-                    List<Object> modelObjectList = resultMap.get(modelClazzName);
-
-                    // Generate the result list corresponding to a certain model
-                    // class if the list have not been generated.
-                    if (modelObjectList == null) {
-                        modelObjectList = new ArrayList<Object>();
-                        resultMap.put(modelClazzName, modelObjectList);
-                    }
-
-                    // Generates a model object having a property value held in
-                    // the model wrapper, and stores the model object in the
-                    // modelObjectList
-                    final Object resultModelObject = model.getAsObject();
-                    modelObjectList.add(resultModelObject);
-
-                    model.initializeFieldMap();
-                }
-
-            }
-
-        } catch (Exception e) {
-            loge("#execSelectTableWithJoin General ", e);
-
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (preparedStmt != null) {
-                    preparedStmt.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                loge("#execSelectTableWithJoin SQLException ", e);
-            }
+          model.initializeFieldMap();
         }
 
-        return resultMap;
+      }
 
-    }
+    } catch (Exception e) {
+      loge("#execSelectTableWithJoin General ", e);
 
-    /**
-     * Set object to the preparedStatement
-     * 
-     * @param parameterIndex
-     * @param preparedStmt
-     * @param value
-     * @throws SQLException
-     */
-    private void setObject(int parameterIndex, PreparedStatement preparedStmt, Object value) throws SQLException {
-
-        preparedStmt.setObject(parameterIndex, value);
-    }
-
-    /**
-     * returns Object array from Object List
-     * 
-     * @param objectList
-     * @param modelClazz
-     * @return
-     */
-    private Object[] toArray(List<Object> objectList, Class<? extends D6Model> modelClazz) {
-
-        if (objectList == null) {
-            return (Object[]) Array.newInstance(modelClazz, 0);
+    } finally {
+      try {
+        if (rs != null) {
+          rs.close();
         }
-
-        final Object[] resultObjects = objectList.toArray((Object[]) Array.newInstance(modelClazz, 0));
-
-        return resultObjects;
-    }
-
-    /**
-     * convert result into ModelObject from the result of execSelectWithJoin
-     * 
-     * @param o
-     * @param modelClazz
-     * @return
-     */
-    public Object[] getAsModel(Map<Class<?>, List<Object>> o, Class<? extends D6Model> modelClazz) {
-
-        return toArray(o.get(modelClazz), modelClazz);
-    }
-
-    /**
-     * Get the DB connection
-     * 
-     * @return
-     */
-    private Connection createConnection() {
-
-        if (mConnInfo != null) {
-            DBConnCreator dbConnCreator = new DBConnCreator(mConnInfo);
-            Connection conn = dbConnCreator.createDBConnection();
-            return conn;
+        if (preparedStmt != null) {
+          preparedStmt.close();
         }
-        else if (mDbcpPropertyFile != null) {
-            Properties properties = new Properties();
-            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(mDbcpPropertyFile);
-            try {
-                properties.load(is);
-                DataSource ds;
-                ds = BasicDataSourceFactory.createDataSource(properties);
-                Connection conn = ds.getConnection();
-                return conn;
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+        if (conn != null) {
+          conn.close();
         }
-        return null;
-
+      } catch (SQLException e) {
+        loge("#execSelectTableWithJoin SQLException ", e);
+      }
     }
 
-    /**
-     * Get raw crud for raw SQL handling
-     * 
-     * @return
-     */
-    public RawCrud getRawCrud() {
-        return new RawCrud();
+    return resultMap;
+
+  }
+
+  /**
+   * Set object to the preparedStatement
+   * 
+   * @param parameterIndex
+   * @param preparedStmt
+   * @param value
+   * @throws SQLException
+   */
+  private void setObject(int parameterIndex, PreparedStatement preparedStmt, Object value) throws SQLException {
+
+    preparedStmt.setObject(parameterIndex, value);
+  }
+
+  /**
+   * returns Object array from Object List
+   * 
+   * @param objectList
+   * @param modelClazz
+   * @return
+   */
+  private  <T extends D6Model> T[] toArray(List<Object> objectList, Class<T> modelClazz) {
+
+    if (objectList == null) {
+      return (T[]) Array.newInstance(modelClazz, 0);
     }
 
-    /**
-     * 
-     * Class of Raw Crud
-     *
-     */
-    public final class RawCrud {
+    final T[] resultObjects = objectList.toArray((T[]) Array.newInstance(modelClazz, 0));
 
-        public Connection createConnection() {
-            return D6Crud.this.createConnection();
-        }
+    return resultObjects;
+  }
 
-        public void setObject(int parameterIndex, PreparedStatement preparedStmt, Object value) throws SQLException {
-            D6Crud.this.setObject(parameterIndex, preparedStmt, value);
-        }
+  /**
+   * convert result into ModelObject from the result of execSelectWithJoin
+   * 
+   * @param o
+   * @param modelClazz
+   * @return
+   */
+  public Object[] getAsModel(Map<Class<?>, List<Object>> o, Class<? extends D6Model> modelClazz) {
+
+    return toArray(o.get(modelClazz), modelClazz);
+  }
+
+  /**
+   * Get the DB connection
+   * 
+   * @return
+   */
+  private Connection createConnection() {
+
+    if (mConnInfo != null) {
+      DBConnCreator dbConnCreator = new DBConnCreator(mConnInfo);
+      Connection conn = dbConnCreator.createDBConnection();
+      return conn;
+    }
+    else if (mDbcpPropertyFile != null) {
+      Properties properties = new Properties();
+      InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(mDbcpPropertyFile);
+      try {
+        properties.load(is);
+        DataSource ds;
+        ds = BasicDataSourceFactory.createDataSource(properties);
+        Connection conn = ds.getConnection();
+        return conn;
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
+    }
+    return null;
+
+  }
+
+  /**
+   * Get raw crud for raw SQL handling
+   * 
+   * @return
+   */
+  public RawCrud getRawCrud() {
+    return new RawCrud();
+  }
+
+  /**
+   * 
+   * Class of Raw Crud
+   *
+   */
+  public final class RawCrud {
+
+    public Connection createConnection() {
+      return D6Crud.this.createConnection();
     }
 
-    void log(String msg) {
-        D6Logger.log(this.getClass(), msg);
+    public void setObject(int parameterIndex, PreparedStatement preparedStmt, Object value) throws SQLException {
+      D6Crud.this.setObject(parameterIndex, preparedStmt, value);
     }
+  }
 
-    void loge(String msg, Exception... e) {
+  void log(String msg) {
+    D6Logger.log(this.getClass(), msg);
+  }
 
-        D6Logger.loge(this.getClass(), msg, e);
-    }
+  void loge(String msg, Exception... e) {
+
+    D6Logger.loge(this.getClass(), msg, e);
+  }
 }

@@ -19,9 +19,9 @@ public class TestHelper_TestDBDef {
   public static final String USER = "root";
 
   // EDIT HERE FOR YOUR ENVIRONMENT
-  public static final String PASS = "password";
+  public static final String PASS = "root";
 
-  public static final String OPTION = "?characterEncoding=UTF-8&serverTimezone=JST";
+  public static final String OPTION = "?characterEncoding=UTF-8&serverTimezone=JST&useSSL=false";
 
   public static final String TEST_DATABASE_NAME = "d6_test_db";
 
