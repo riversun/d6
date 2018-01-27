@@ -173,8 +173,7 @@ public class D6Crud {
 
       preparedStmt = conn.prepareStatement(deleteSQL);
 
-      for (D6Model modelObj : modelObjs)
-      {
+      for (D6Model modelObj : modelObjs) {
         dh.map(modelObj, preparedStmt);
 
         // execute SQL
@@ -258,6 +257,75 @@ public class D6Crud {
 
       // execute SQL
       preparedStmt.executeUpdate();
+
+      // finally commit
+      conn.commit();
+
+      retVal = true;
+
+    } catch (SQLException e) {
+
+      loge("#execUpdate", e);
+      retVal = false;
+
+    } catch (D6Exception e) {
+
+      // catch from helper
+      loge("#execUpdate", e);
+      retVal = false;
+
+    } finally {
+      try {
+        conn.close();
+      } catch (SQLException e) {
+        retVal = false;
+        loge("#execUpdate", e);
+      }
+    }
+    return retVal;
+
+  }
+
+  /**
+   * Update Model Objects
+   * 
+   * @param modelObj
+   * @param includeExcludeColumnNames
+   * @return true:DB operation success false:failure
+   */
+  public boolean execUpdate(D6Model[] modelObjs, D6Inex includeExcludeColumnNames) {
+
+    boolean retVal = false;
+
+    if (modelObjs == null || modelObjs.length == 0) {
+      return retVal;
+    }
+
+    final D6CrudUpdateHelper d6CrudUpdateHelper = new D6CrudUpdateHelper(modelObjs[0].getClass());
+
+    final String updateSQL = d6CrudUpdateHelper.createUpdatePreparedSQLStatement(includeExcludeColumnNames);
+
+    log("#execUpdate updateSQL=" + updateSQL);
+
+    final Connection conn = createConnection();
+
+    try {
+
+      PreparedStatement preparedStmt = null;
+
+      // There is a possibility that the error occurs in one single update
+      // statement.
+      // Therefore, turn the auto commit off.
+      conn.setAutoCommit(false);
+
+      for (D6Model modelObj : modelObjs) {
+        // loop
+        preparedStmt = conn.prepareStatement(updateSQL);
+        d6CrudUpdateHelper.map(modelObj, preparedStmt, includeExcludeColumnNames);
+
+        // execute SQL
+        preparedStmt.executeUpdate();
+      }
 
       // finally commit
       conn.commit();
@@ -735,7 +803,7 @@ public class D6Crud {
    * @param modelClazz
    * @return
    */
-  public  <T extends D6Model> T[] execSelectTable(String preparedSql, Object[] searchKeys, Class<T> modelClazz) {
+  public <T extends D6Model> T[] execSelectTable(String preparedSql, Object[] searchKeys, Class<T> modelClazz) {
 
     @SuppressWarnings("unchecked")
     final Map<Class<?>, List<Object>> result = execSelectTableWithJoin(preparedSql, searchKeys, modelClazz);
@@ -945,7 +1013,7 @@ public class D6Crud {
    * @param modelClazz
    * @return
    */
-  private  <T extends D6Model> T[] toArray(List<Object> objectList, Class<T> modelClazz) {
+  private <T extends D6Model> T[] toArray(List<Object> objectList, Class<T> modelClazz) {
 
     if (objectList == null) {
       return (T[]) Array.newInstance(modelClazz, 0);
@@ -979,8 +1047,7 @@ public class D6Crud {
       DBConnCreator dbConnCreator = new DBConnCreator(mConnInfo);
       Connection conn = dbConnCreator.createDBConnection();
       return conn;
-    }
-    else if (mDbcpPropertyFile != null) {
+    } else if (mDbcpPropertyFile != null) {
       Properties properties = new Properties();
       InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(mDbcpPropertyFile);
       try {
